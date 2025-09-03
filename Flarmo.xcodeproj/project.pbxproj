@@ -16,6 +16,36 @@
 			path = Flarmo;
 			sourceTree = "<group>";
 		};
+		4FDEAC552E68591000A3BE21 /* Models */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Models;
+			sourceTree = "<group>";
+		};
+		4FDEAC562E68592500A3BE21 /* ViewModels */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		4FDEAC572E68592E00A3BE21 /* Views */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Views;
+			sourceTree = "<group>";
+		};
+		4FDEAC582E68593700A3BE21 /* Services */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Services;
+			sourceTree = "<group>";
+		};
+		4FDEAC592E68593E00A3BE21 /* Persistence */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Persistence;
+			sourceTree = "<group>";
+		};
+		4FDEAC692E685DBD00A3BE21 /* Extensions */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Extensions;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -32,6 +62,12 @@
 		4FDEAC3C2E6858CB00A3BE21 = {
 			isa = PBXGroup;
 			children = (
+				4FDEAC692E685DBD00A3BE21 /* Extensions */,
+				4FDEAC552E68591000A3BE21 /* Models */,
+				4FDEAC562E68592500A3BE21 /* ViewModels */,
+				4FDEAC572E68592E00A3BE21 /* Views */,
+				4FDEAC582E68593700A3BE21 /* Services */,
+				4FDEAC592E68593E00A3BE21 /* Persistence */,
 				4FDEAC472E6858CB00A3BE21 /* Flarmo */,
 				4FDEAC462E6858CB00A3BE21 /* Products */,
 			);
@@ -62,6 +98,12 @@
 			);
 			fileSystemSynchronizedGroups = (
 				4FDEAC472E6858CB00A3BE21 /* Flarmo */,
+				4FDEAC552E68591000A3BE21 /* Models */,
+				4FDEAC562E68592500A3BE21 /* ViewModels */,
+				4FDEAC572E68592E00A3BE21 /* Views */,
+				4FDEAC582E68593700A3BE21 /* Services */,
+				4FDEAC592E68593E00A3BE21 /* Persistence */,
+				4FDEAC692E685DBD00A3BE21 /* Extensions */,
 			);
 			name = Flarmo;
 			packageProductDependencies = (

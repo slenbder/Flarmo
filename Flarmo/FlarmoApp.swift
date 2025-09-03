@@ -9,6 +9,16 @@ import SwiftUI
 
 @main
 struct FlarmoApp: App {
+    init() {
+        // Делаем сервис делегатом центра уведомлений
+        UNUserNotificationCenter.current().delegate = NotificationService.shared
+        
+        // Запрашиваем разрешение
+        NotificationService.shared.requestPermission { granted in
+            print("Разрешение на уведомления: \(granted)")
+        }
+    }
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
