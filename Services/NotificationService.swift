@@ -8,7 +8,13 @@
 import Foundation
 import UserNotifications
 
-class NotificationService: NSObject, UNUserNotificationCenterDelegate {
+protocol NotificationScheduling: AnyObject {
+    func scheduleNotification(for alarm: Alarm)
+    func cancelNotification(for alarm: Alarm)
+    func updateNotification(for alarm: Alarm)
+}
+
+class NotificationService: NSObject, UNUserNotificationCenterDelegate, NotificationScheduling {
     static let shared = NotificationService()
     private let center = UNUserNotificationCenter.current()
     
