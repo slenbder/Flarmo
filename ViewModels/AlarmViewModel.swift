@@ -8,24 +8,40 @@
 import Foundation
 
 class AlarmViewModel: ObservableObject {
-    @Published var alarms: [Alarm] = []
+    private let notifier: NotificationScheduling
+    private let persistence: AlarmPersistence
+    @Published var alarms: [Alarm] = [] {
+        didSet {
+            persistence.saveAlarms(alarms)
+        }
+    }
+
+    init(notifier: NotificationScheduling = NotificationService.shared,
+         persistence: AlarmPersistence = PersistenceService.shared) {
+        self.notifier = notifier
+        self.persistence = persistence
+        let loaded = persistence.loadAlarms()
+        self.alarms = loaded
+        for alarm in loaded where alarm.isActive {
+            notifier.updateNotification(for: alarm)
+        }
+    }
     
     func addAlarm(_ alarm: Alarm) {
         alarms.append(alarm)
-        NotificationService.shared.scheduleNotification(for: alarm)
+        notifier.scheduleNotification(for: alarm)
     }
 
     func removeAlarm(at index: Int) {
         let alarm = alarms[index]
-        NotificationService.shared.cancelNotification(for: alarm)
+        notifier.cancelNotification(for: alarm)
         alarms.remove(at: index)
     }
 
     func toggleAlarm(_ alarm: Alarm) {
-        if let index = alarms.firstIndex(where: { $0.id == alarm.id }) {
-            alarms[index].isActive.toggle()
-            NotificationService.shared.updateNotification(for: alarms[index])
-        }
+        guard let index = alarms.firstIndex(where: { $0.id == alarm.id }) else { return }
+        alarms[index].isActive.toggle()
+        notifier.updateNotification(for: alarms[index])
     }
     
     func updateAlarm(_ updated: Alarm, autoActivate: Bool = true) {
@@ -39,12 +55,12 @@ class AlarmViewModel: ObservableObject {
 
         if newAlarm.isActive {
             if wasActive {
-                NotificationService.shared.updateNotification(for: newAlarm)
+                notifier.updateNotification(for: newAlarm)
             } else {
-                NotificationService.shared.scheduleNotification(for: newAlarm)
+                notifier.scheduleNotification(for: newAlarm)
             }
         } else {
-            NotificationService.shared.cancelNotification(for: newAlarm)
+            notifier.cancelNotification(for: newAlarm)
         }
     }
 }
