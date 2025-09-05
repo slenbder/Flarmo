@@ -22,13 +22,13 @@ protocol MigrationRunning {
 
 final class MigrationV1toV2: MigrationRunning {
     private let defaults: UserDefaults
-    private let repo: SchedulesRepository
+    private let repo: ScheduleRepository
 
     private let v1Key = "alarms"
     private let didFlag = "migration.v1toV2.done"
 
     init(defaults: UserDefaults = .standard,
-         repo: SchedulesRepository = UserDefaultsSchedulesRepositoryV2()) {
+         repo: ScheduleRepository) {
         self.defaults = defaults
         self.repo = repo
     }
@@ -57,23 +57,27 @@ final class MigrationV1toV2: MigrationRunning {
 
         print("[Migration] Migrating \(alarms.count) alarms from v1 → v2")
 
-        // fetch current v2, append migrated
-        var schedules = repo.fetchAll()
         let migrated: [Schedule] = alarms.map { a in
             Schedule(
                 name: a.label ?? "Alarm",
-                colorId: nil,
+                colorId: defaultColorId(for: a),
                 toneId: a.toneId,
                 type: .oneTime(date: a.date),
                 isActive: a.isEnabled
             )
         }
-        schedules.append(contentsOf: migrated)
-        repo.saveAll(schedules)
 
-        print("[Migration] Completed, now \(schedules.count) schedules stored in v2")
+        // upsert migrated directly into v2 repo
+        for s in migrated { repo.upsert(s) }
+        let total = repo.getAll().count
+        print("[Migration] Completed, now \(total) schedules stored in v2")
 
         // set done flag
         defaults.set(true, forKey: didFlag)
+    }
+    /// Provides a deterministic default color for migrated alarms.
+    /// Spreads colors across a 10-color palette using a stable hash of the v1 id.
+    private func defaultColorId(for alarm: AlarmV1) -> Int {
+        return abs(alarm.id.hashValue) % 10
     }
 }

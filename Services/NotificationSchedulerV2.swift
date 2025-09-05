@@ -15,20 +15,33 @@ protocol NotificationsScheduling {
 final class NotificationSchedulerV2: NotificationsScheduling {
     private let center = UNUserNotificationCenter.current()
     private let calc: ScheduleCalculating
+    private let queue = DispatchQueue(label: "notif.scheduler.v2")
+    private var pendingWork: DispatchWorkItem?
     init(calc: ScheduleCalculating = ScheduleCalculator()) { self.calc = calc }
 
     func reschedule(for schedules: [Schedule]) {
-            print("[NotificationScheduler] Rescheduling for \(schedules.count) schedules")
-            center.getPendingNotificationRequests { [weak self] pending in
-                let ourIds = pending
-                    .map(\.identifier)
-                    .filter { $0.hasPrefix("sched_") }
-                print("[NotificationScheduler] Removing \(ourIds.count) old v2 notifications")
-
-                self?.center.removePendingNotificationRequests(withIdentifiers: ourIds)
-                self?.scheduleNew(for: schedules)
+        queue.async {
+            self.pendingWork?.cancel()
+            let work = DispatchWorkItem { [weak self] in
+                self?._rescheduleNow(for: schedules)
             }
+            self.pendingWork = work
+            self.queue.asyncAfter(deadline: .now() + 0.15, execute: work)
         }
+    }
+
+    private func _rescheduleNow(for schedules: [Schedule]) {
+        print("[NotificationScheduler] Rescheduling for \(schedules.count) schedules")
+        center.getPendingNotificationRequests { [weak self] pending in
+            let ourIds = pending
+                .map(\.identifier)
+                .filter { $0.hasPrefix("sched_") }
+            print("[NotificationScheduler] Removing \(ourIds.count) old v2 notifications")
+
+            self?.center.removePendingNotificationRequests(withIdentifiers: ourIds)
+            self?.scheduleNew(for: schedules)
+        }
+    }
 
     private func scheduleNew(for schedules: [Schedule]) {
             for s in schedules where s.isActive {

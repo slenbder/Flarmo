@@ -36,9 +36,9 @@
 			path = Services;
 			sourceTree = "<group>";
 		};
-		4FDEAC592E68593E00A3BE21 /* Persistence */ = {
+		4FDEAC592E68593E00A3BE21 /* Repositories */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = Persistence;
+			path = Repositories;
 			sourceTree = "<group>";
 		};
 		4FDEAC692E685DBD00A3BE21 /* Extensions */ = {
@@ -67,7 +67,7 @@
 				4FDEAC562E68592500A3BE21 /* ViewModels */,
 				4FDEAC572E68592E00A3BE21 /* Views */,
 				4FDEAC582E68593700A3BE21 /* Services */,
-				4FDEAC592E68593E00A3BE21 /* Persistence */,
+				4FDEAC592E68593E00A3BE21 /* Repositories */,
 				4FDEAC472E6858CB00A3BE21 /* Flarmo */,
 				4FDEAC462E6858CB00A3BE21 /* Products */,
 			);
@@ -102,7 +102,7 @@
 				4FDEAC562E68592500A3BE21 /* ViewModels */,
 				4FDEAC572E68592E00A3BE21 /* Views */,
 				4FDEAC582E68593700A3BE21 /* Services */,
-				4FDEAC592E68593E00A3BE21 /* Persistence */,
+				4FDEAC592E68593E00A3BE21 /* Repositories */,
 				4FDEAC692E685DBD00A3BE21 /* Extensions */,
 			);
 			name = Flarmo;
