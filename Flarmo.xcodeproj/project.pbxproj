@@ -6,27 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
-/* Begin PBXContainerItemProxy section */
-		4FB230422E68A233005FA55A /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 4FDEAC3D2E6858CB00A3BE21 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 4FDEAC442E6858CB00A3BE21;
-			remoteInfo = Flarmo;
-		};
-/* End PBXContainerItemProxy section */
-
 /* Begin PBXFileReference section */
-		4FB2303E2E68A233005FA55A /* FlarmoTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FlarmoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4FDEAC452E6858CB00A3BE21 /* Flarmo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Flarmo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		4FB2303F2E68A233005FA55A /* FlarmoTests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = FlarmoTests;
-			sourceTree = "<group>";
-		};
 		4FDEAC472E6858CB00A3BE21 /* Flarmo */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = Flarmo;
@@ -65,13 +49,6 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		4FB2303B2E68A233005FA55A /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		4FDEAC422E6858CB00A3BE21 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -92,7 +69,6 @@
 				4FDEAC582E68593700A3BE21 /* Services */,
 				4FDEAC592E68593E00A3BE21 /* Persistence */,
 				4FDEAC472E6858CB00A3BE21 /* Flarmo */,
-				4FB2303F2E68A233005FA55A /* FlarmoTests */,
 				4FDEAC462E6858CB00A3BE21 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -101,7 +77,6 @@
 			isa = PBXGroup;
 			children = (
 				4FDEAC452E6858CB00A3BE21 /* Flarmo.app */,
-				4FB2303E2E68A233005FA55A /* FlarmoTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -109,29 +84,6 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		4FB2303D2E68A233005FA55A /* FlarmoTests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 4FB230442E68A233005FA55A /* Build configuration list for PBXNativeTarget "FlarmoTests" */;
-			buildPhases = (
-				4FB2303A2E68A233005FA55A /* Sources */,
-				4FB2303B2E68A233005FA55A /* Frameworks */,
-				4FB2303C2E68A233005FA55A /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				4FB230432E68A233005FA55A /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				4FB2303F2E68A233005FA55A /* FlarmoTests */,
-			);
-			name = FlarmoTests;
-			packageProductDependencies = (
-			);
-			productName = FlarmoTests;
-			productReference = 4FB2303E2E68A233005FA55A /* FlarmoTests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
-		};
 		4FDEAC442E6858CB00A3BE21 /* Flarmo */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 4FDEAC502E6858CC00A3BE21 /* Build configuration list for PBXNativeTarget "Flarmo" */;
@@ -170,10 +122,6 @@
 				LastSwiftUpdateCheck = 1640;
 				LastUpgradeCheck = 1640;
 				TargetAttributes = {
-					4FB2303D2E68A233005FA55A = {
-						CreatedOnToolsVersion = 16.4;
-						TestTargetID = 4FDEAC442E6858CB00A3BE21;
-					};
 					4FDEAC442E6858CB00A3BE21 = {
 						CreatedOnToolsVersion = 16.4;
 					};
@@ -194,19 +142,11 @@
 			projectRoot = "";
 			targets = (
 				4FDEAC442E6858CB00A3BE21 /* Flarmo */,
-				4FB2303D2E68A233005FA55A /* FlarmoTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		4FB2303C2E68A233005FA55A /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		4FDEAC432E6858CB00A3BE21 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -217,13 +157,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		4FB2303A2E68A233005FA55A /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		4FDEAC412E6858CB00A3BE21 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -233,51 +166,7 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
-/* Begin PBXTargetDependency section */
-		4FB230432E68A233005FA55A /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 4FDEAC442E6858CB00A3BE21 /* Flarmo */;
-			targetProxy = 4FB230422E68A233005FA55A /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
-
 /* Begin XCBuildConfiguration section */
-		4FB230452E68A233005FA55A /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 6D5U6N6YZA;
-				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.Slenbder.FlarmoTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Flarmo.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Flarmo";
-			};
-			name = Debug;
-		};
-		4FB230462E68A233005FA55A /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 6D5U6N6YZA;
-				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.Slenbder.FlarmoTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Flarmo.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Flarmo";
-			};
-			name = Release;
-		};
 		4FDEAC4E2E6858CC00A3BE21 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -409,11 +298,13 @@
 				DEVELOPMENT_TEAM = 6D5U6N6YZA;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UIStatusBarStyle = "";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = UIInterfaceOrientationPortrait;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -421,9 +312,12 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.Slenbder.Flarmo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -437,11 +331,13 @@
 				DEVELOPMENT_TEAM = 6D5U6N6YZA;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UIStatusBarStyle = "";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = UIInterfaceOrientationPortrait;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -449,24 +345,18 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.Slenbder.Flarmo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		4FB230442E68A233005FA55A /* Build configuration list for PBXNativeTarget "FlarmoTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				4FB230452E68A233005FA55A /* Debug */,
-				4FB230462E68A233005FA55A /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
 		4FDEAC402E6858CB00A3BE21 /* Build configuration list for PBXProject "Flarmo" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
