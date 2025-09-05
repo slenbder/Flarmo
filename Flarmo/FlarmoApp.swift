@@ -17,6 +17,7 @@ struct FlarmoApp: App {
 
     init() {
         self.bootstrap = AppBootstrap(repo: appRepo)
+        NotificationSchedulerV2.registerCategories()
         bootstrap.start()
     }
 

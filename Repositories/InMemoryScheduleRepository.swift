@@ -29,10 +29,12 @@ final class InMemoryScheduleRepository: ScheduleRepository {
 // MARK: - Persistence
 private extension InMemoryScheduleRepository {
     func load() {
+        print("💾 Loading schedules from: \(fileURL.path)")
         guard let data = try? Data(contentsOf: fileURL) else { return }
         do {
             let decoded = try JSONDecoder().decode([ScheduleDTO].self, from: data)
             self.store = Dictionary(uniqueKeysWithValues: decoded.map { ($0.id, $0.model) })
+            print("💾 Loaded \(store.count) schedules from disk")
         } catch {
             print("❌ Failed to load schedules: \(error)")
         }
@@ -41,8 +43,12 @@ private extension InMemoryScheduleRepository {
     func persist() {
         do {
             let arr = store.values.map { ScheduleDTO($0) }
+            print("💾 Persisting \(arr.count) schedules to: \(fileURL.path)")
             let data = try JSONEncoder().encode(arr)
-            try data.write(to: fileURL, options: .atomic)
+            let tmpURL = fileURL.appendingPathExtension("tmp")
+            try data.write(to: tmpURL, options: .atomic)
+            try? FileManager.default.replaceItemAt(fileURL, withItemAt: tmpURL)
+            print("💾 Persist successful")
         } catch {
             print("❌ Failed to persist schedules: \(error)")
         }

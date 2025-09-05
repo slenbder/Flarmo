@@ -42,6 +42,9 @@ final class EditOneTimeScheduleViewModel: ObservableObject {
     }
 
     func save() {
+        if isActive && date < Date() {
+            print("⚠️ Warning: saving active one-time schedule in the past — will be marked as inactive")
+        }
         var schedule: Schedule
         switch mode {
         case .create:
@@ -70,6 +73,7 @@ final class EditOneTimeScheduleViewModel: ObservableObject {
         } else {
             print("⏸ Saved (inactive or past): \(schedule.name.isEmpty ? "Будильник" : schedule.name)")
         }
+        print("💾 Repo now has \(all.count) schedules")
     }
 
     func deleteIfEditing() {
@@ -79,6 +83,7 @@ final class EditOneTimeScheduleViewModel: ObservableObject {
             let all = repo.getAll()
             scheduler.reschedule(for: all)
             print("🗑 Deleted schedule: \(s.name.isEmpty ? s.id.uuidString : s.name)")
+            print("💾 Repo now has \(all.count) schedules")
         }
     }
 }

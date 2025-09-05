@@ -21,6 +21,7 @@ final class NotificationSchedulerV2: NotificationsScheduling {
 
     func reschedule(for schedules: [Schedule]) {
         queue.async {
+            guard !schedules.isEmpty else { return }
             self.pendingWork?.cancel()
             let work = DispatchWorkItem { [weak self] in
                 self?._rescheduleNow(for: schedules)
@@ -46,6 +47,7 @@ final class NotificationSchedulerV2: NotificationsScheduling {
     private func scheduleNew(for schedules: [Schedule]) {
             for s in schedules where s.isActive {
                 let nexts = calc.nextTriggers(for: s, limit: 8, from: Date())
+                guard !nexts.isEmpty else { continue }
                 print("[NotificationScheduler] \(s.name) → scheduling \(nexts.count) triggers")
                 for date in nexts {
                     let trigger = UNCalendarNotificationTrigger(
@@ -59,6 +61,7 @@ final class NotificationSchedulerV2: NotificationsScheduling {
                     content.sound = s.toneId != nil
                         ? UNNotificationSound(named: UNNotificationSoundName(rawValue: "\(s.toneId!).caf"))
                         : .default
+                    content.categoryIdentifier = "ALARM_CATEGORY"
 
                     let id = "sched_\(s.id.uuidString)_\(Int(date.timeIntervalSince1970))"
                     let req = UNNotificationRequest(identifier: id, content: content, trigger: trigger)
@@ -72,4 +75,11 @@ final class NotificationSchedulerV2: NotificationsScheduling {
                 }
             }
         }
+    
+    static func registerCategories() {
+        let snooze = UNNotificationAction(identifier: "SNOOZE_ACTION", title: "Отложить", options: [])
+        let stop = UNNotificationAction(identifier: "STOP_ACTION", title: "Выключить", options: [.destructive])
+        let category = UNNotificationCategory(identifier: "ALARM_CATEGORY", actions: [snooze, stop], intentIdentifiers: [], options: [])
+        UNUserNotificationCenter.current().setNotificationCategories([category])
+    }
 }
