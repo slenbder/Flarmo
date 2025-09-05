@@ -10,6 +10,9 @@ import SwiftUI
 @main
 struct FlarmoApp: App {
     init() {
+        
+        AppBootstrap().start()
+        
         // Делаем сервис делегатом центра уведомлений
         UNUserNotificationCenter.current().delegate = NotificationService.shared
         
