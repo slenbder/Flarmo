@@ -41,12 +41,29 @@ struct ScheduleListView: View {
                     EditButton()
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        path.append(Route.createOneTime)
+                    Menu {
+                        Button(action: { path.append(.createOneTime) }) {
+                            HStack(spacing: 8) {
+                                Image("Once").renderingMode(.original)
+                                Text("Разовый будильник")
+                            }
+                        }
+                        Button(action: { path.append(.createShiftPattern) }) {
+                            HStack(spacing: 8) {
+                                Image("Shift").renderingMode(.original)
+                                Text("Сменный график")
+                            }
+                        }
+                        Button(action: { path.append(.createFloatingPattern) }) {
+                            HStack(spacing: 8) {
+                                Image("Wave").renderingMode(.original)
+                                Text("Плавающий график")
+                            }
+                        }
                     } label: {
                         Label("Добавить", systemImage: "plus")
                     }
-                    .accessibilityLabel("Добавить разовый будильник")
+                    .accessibilityLabel("Добавить будильник")
                 }
             }
             .navigationDestination(for: Route.self) { route in
@@ -55,6 +72,10 @@ struct ScheduleListView: View {
                     EditOneTimeScheduleView(repo: repo, source: .create) {
                         vm.reload()
                     }
+                case .createShiftPattern:
+                    Text("Сменный график — скоро")
+                case .createFloatingPattern:
+                    Text("Плавающий график — скоро")
                 case .edit(let schedule):
                     if case .oneTime = schedule.type {
                         EditOneTimeScheduleView(repo: repo, source: .edit(schedule)) {
@@ -71,11 +92,17 @@ struct ScheduleListView: View {
 
     enum Route: Equatable, Hashable {
         case createOneTime
+        case createShiftPattern
+        case createFloatingPattern
         case edit(Schedule)
 
         static func == (lhs: Route, rhs: Route) -> Bool {
             switch (lhs, rhs) {
             case (.createOneTime, .createOneTime):
+                return true
+            case (.createShiftPattern, .createShiftPattern):
+                return true
+            case (.createFloatingPattern, .createFloatingPattern):
                 return true
             case let (.edit(a), .edit(b)):
                 return a.id == b.id
@@ -88,8 +115,12 @@ struct ScheduleListView: View {
             switch self {
             case .createOneTime:
                 hasher.combine(0)
-            case .edit(let s):
+            case .createShiftPattern:
                 hasher.combine(1)
+            case .createFloatingPattern:
+                hasher.combine(2)
+            case .edit(let s):
+                hasher.combine(3)
                 hasher.combine(s.id)
             }
         }
@@ -98,6 +129,7 @@ struct ScheduleListView: View {
 
 private struct ScheduleRow: View {
     let schedule: Schedule
+    private var next: Date? { schedule.nextFireDate() }
 
     var body: some View {
         HStack(spacing: 12) {
@@ -112,12 +144,12 @@ private struct ScheduleRow: View {
 
                 Text(schedule.nextFireLabel())
                     .font(.subheadline)
-                    .foregroundStyle(schedule.nextFireDate() == nil ? .secondary : .secondary)
+                    .foregroundStyle(.secondary)
             }
 
             Spacer()
 
-            if schedule.nextFireDate() == nil {
+            if next == nil {
                 Text("⏸")
                     .accessibilityLabel("Неактивно")
                     .foregroundStyle(.secondary)
