@@ -12,7 +12,7 @@ import Foundation
 public struct Schedule: Identifiable, Codable, Equatable {
     public let id: UUID
     public var name: String
-    public var colorId: String?
+    public var colorId: Int
     public var toneId: String?
     public var type: ScheduleType
     public var isActive: Bool
@@ -20,7 +20,7 @@ public struct Schedule: Identifiable, Codable, Equatable {
     public init(
         id: UUID = UUID(),
         name: String,
-        colorId: String? = nil,
+        colorId: Int = 0,
         toneId: String? = nil,
         type: ScheduleType,
         isActive: Bool = true

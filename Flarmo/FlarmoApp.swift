@@ -6,25 +6,34 @@
 //
 
 import SwiftUI
+import UserNotifications
 
 @main
 struct FlarmoApp: App {
+    // private let appRepo: ScheduleRepository = InMemoryScheduleRepository()
+    private let appRepo: ScheduleRepository = FileScheduleRepository()  // ← вот так
+    @Environment(\.scenePhase) private var scenePhase
+    private let bootstrap: AppBootstrap
+
     init() {
-        
-        AppBootstrap().start()
-        
-        // Делаем сервис делегатом центра уведомлений
-        UNUserNotificationCenter.current().delegate = NotificationService.shared
-        
-        // Запрашиваем разрешение
-        NotificationService.shared.requestPermission { granted in
-            print("Разрешение на уведомления: \(granted)")
-        }
+        self.bootstrap = AppBootstrap(repo: appRepo)
+        NotificationSchedulerV2.registerCategories()
+        bootstrap.start()
     }
-    
+
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ScheduleListView(repo: appRepo)
+                .onAppear {
+                    NotificationService.shared.requestPermission { granted in
+                        print("Разрешение на уведомления: \(granted)")
+                    }
+                }
+        }
+        .onChange(of: scenePhase) { phase in
+            if phase == .active {
+                bootstrap.sceneBecameActive()
+            }
         }
     }
 }
