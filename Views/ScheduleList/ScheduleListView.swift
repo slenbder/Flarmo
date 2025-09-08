@@ -131,6 +131,50 @@ private struct ScheduleRow: View {
     let schedule: Schedule
     private var next: Date? { schedule.nextFireDate() }
 
+    private static var cal: Calendar = {
+        var c = Calendar.current
+        c.timeZone = .current
+        return c
+    }()
+
+    private static let timeFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "ru_RU")
+        f.timeZone = .current
+        f.dateFormat = "HH:mm"
+        return f
+    }()
+
+    private static let ruFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "ru_RU")
+        f.timeZone = .current
+        f.dateFormat = "dd.MM.yyyy 'в' HH:mm"
+        return f
+    }()
+
+    private func relativeLabel(for date: Date) -> String? {
+        let cal = Self.cal
+        let startOfToday = cal.startOfDay(for: Date())
+        let startOfThat = cal.startOfDay(for: date)
+        guard let days = cal.dateComponents([.day], from: startOfToday, to: startOfThat).day else { return nil }
+        let time = Self.timeFormatter.string(from: date)
+        switch days {
+        case 0: return "Сегодня в \(time)"
+        case 1: return "Завтра в \(time)"
+        case 2: return "Послезавтра в \(time)"
+        default: return nil
+        }
+    }
+
+    private var nextLabel: String {
+        if let d = next {
+            if let rel = relativeLabel(for: d) { return rel }
+            return Self.ruFormatter.string(from: d)
+        }
+        return schedule.nextFireLabel()
+    }
+
     var body: some View {
         HStack(spacing: 12) {
             Circle()
@@ -142,18 +186,12 @@ private struct ScheduleRow: View {
                     .font(.headline)
                     .lineLimit(1)
 
-                Text(schedule.nextFireLabel())
+                Text(nextLabel)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
 
             Spacer()
-
-            if next == nil {
-                Text("⏸")
-                    .accessibilityLabel("Неактивно")
-                    .foregroundStyle(.secondary)
-            }
         }
         .contentShape(Rectangle())
     }

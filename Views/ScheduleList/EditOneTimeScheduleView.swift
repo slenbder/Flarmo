@@ -30,6 +30,10 @@ struct EditOneTimeScheduleView: View {
         self.sourceKind = source
     }
 
+    private var isPast: Bool {
+        vm.date < Date()
+    }
+
     var body: some View {
         Form {
             Section {
@@ -54,8 +58,15 @@ struct EditOneTimeScheduleView: View {
             Section("Дата и время") {
                 DatePicker("Дата и время", selection: $vm.date, displayedComponents: [.date, .hourAndMinute])
                     .datePickerStyle(.graphical)
-                    .onTapGesture { print("[UI] datePicker tapped"); nameFocused = false }
+                    .environment(\.locale, Locale(identifier: "ru_RU"))
                     .onChange(of: vm.date) { _ in print("[UI] date changed to \(vm.date)"); nameFocused = false }
+            }
+            
+            if isPast {
+                Section {
+                    Label("Дата/время в прошлом. Выберите будущее время.", systemImage: "exclamationmark.triangle.fill")
+                        .foregroundStyle(.red)
+                }
             }
             
             Section {
@@ -77,7 +88,7 @@ struct EditOneTimeScheduleView: View {
                     Text("Сохранить")
                         .frame(maxWidth: .infinity, alignment: .center)
                 }
-                .disabled(!vm.canSave)
+                .disabled(!vm.canSave || isPast)
             }
 
             if case .edit = sourceKind {
@@ -96,10 +107,17 @@ struct EditOneTimeScheduleView: View {
         .navigationTitle(title)
         .navigationBarTitleDisplayMode(.inline)
         .scrollDismissesKeyboard(.interactively)
+        .onAppear {
+            // Нормализуем секунды до 0, чтобы исключить рассинхрон с триггерами
+            let comps = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: vm.date)
+            if let normalized = Calendar.current.date(from: comps) {
+                vm.date = normalized
+            }
+        }
         .toolbar {
             ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
                 Button("Готово") { nameFocused = false }
-                    .frame(maxWidth: .infinity, alignment: .trailing)
             }
         }
     }
