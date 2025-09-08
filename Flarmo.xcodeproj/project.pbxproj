@@ -11,6 +11,11 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		4F8DC98D2E6D938400829D53 /* Domain */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Domain;
+			sourceTree = "<group>";
+		};
 		4FDEAC472E6858CB00A3BE21 /* Flarmo */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = Flarmo;
@@ -62,6 +67,7 @@
 		4FDEAC3C2E6858CB00A3BE21 = {
 			isa = PBXGroup;
 			children = (
+				4F8DC98D2E6D938400829D53 /* Domain */,
 				4FDEAC692E685DBD00A3BE21 /* Extensions */,
 				4FDEAC552E68591000A3BE21 /* Models */,
 				4FDEAC562E68592500A3BE21 /* ViewModels */,
@@ -97,6 +103,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
+				4F8DC98D2E6D938400829D53 /* Domain */,
 				4FDEAC472E6858CB00A3BE21 /* Flarmo */,
 				4FDEAC552E68591000A3BE21 /* Models */,
 				4FDEAC562E68592500A3BE21 /* ViewModels */,
