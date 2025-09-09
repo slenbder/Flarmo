@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct RecurrenceCalculator {
+public struct RecurrenceCalculator: RecurrenceCalculating {
     public struct Config {
         public let calendar: Calendar
         public init(calendar: Calendar = Calendar.current) {
@@ -55,6 +55,15 @@ public struct RecurrenceCalculator {
         case .customDates(let dates):
             return handleCustom(dates: dates, from: start, limit: limit, until: until)
         }
+    }
+
+    // MARK: - RecurrenceCalculating bridge
+    public func nextOccurrences(for schedule: Schedule,
+                                from start: Date,
+                                until end: Date,
+                                limit: Int?) -> [Date] {
+        let lim = limit ?? Int.max
+        return nextOccurrences(for: schedule, from: start, limit: lim, until: end)
     }
 }
 

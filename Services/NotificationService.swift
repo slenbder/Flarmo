@@ -38,42 +38,39 @@ class NotificationService: NSObject, UNUserNotificationCenterDelegate, Notificat
     
     // MARK: - Scheduling
     
+    @available(*, deprecated, message: "Deprecated. Use NotificationPlanner with Schedule instead.")
     func scheduleNotification(for alarm: Alarm) {
-        guard alarm.isActive else {
-            print("⏸ Будильник \(alarm.id) выключен, уведомление не ставим")
-            return
-        }
-        
-        let content = UNMutableNotificationContent()
-        content.title = "Будильник"
-        content.body = alarm.label.isEmpty ? "Пора вставать!" : alarm.label
-        content.sound = .default
-        
-        let triggerDate = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: alarm.time)
-        let trigger = UNCalendarNotificationTrigger(dateMatching: triggerDate, repeats: false)
-        
-        let request = UNNotificationRequest(identifier: alarm.id.uuidString, content: content, trigger: trigger)
-        
-        center.add(request) { error in
-            if let error = error {
-                print("❌ Ошибка планирования уведомления: \(error)")
-            } else {
-                print("✅ Уведомление запланировано на \(alarm.time.formattedDateTime())")
-            }
-        }
+        // DEPRECATED: постановка уведомлений теперь делается через NotificationPlanner (этап E).
+        // Метод оставлен как no-op для сохранения бинарной совместимости.
+        print("[NotificationService] scheduleNotification(for:) is deprecated — ignored. Use NotificationPlanner.")
     }
     
+    @available(*, deprecated, message: "Deprecated. Use NotificationPlanner with Schedule instead.")
     func cancelNotification(for alarm: Alarm) {
-        center.removePendingNotificationRequests(withIdentifiers: [alarm.id.uuidString])
-        print("🗑 Уведомление отменено для \(alarm.id)")
+        // DEPRECATED: отмена уведомлений выполняется через перепланирование NotificationPlanner.
+        print("[NotificationService] cancelNotification(for:) is deprecated — ignored. Use NotificationPlanner.")
     }
     
+    @available(*, deprecated, message: "Deprecated. Use NotificationPlanner with Schedule instead.")
     func updateNotification(for alarm: Alarm) {
-        cancelNotification(for: alarm)
-        scheduleNotification(for: alarm)
+        // DEPRECATED: обновление выполняется через перепланирование NotificationPlanner.
+        print("[NotificationService] updateNotification(for:) is deprecated — ignored. Use NotificationPlanner.")
     }
     
     // MARK: - Debug / Test
+    /// Удаляет старые pending-уведомления формата `sched_...` (до этапа E)
+    func removeLegacyPending(completion: (() -> Void)? = nil) {
+        center.getPendingNotificationRequests { [weak self] reqs in
+            let legacy = reqs.map(\.identifier).filter { $0.hasPrefix("sched_") }
+            if !legacy.isEmpty {
+                self?.center.removePendingNotificationRequests(withIdentifiers: legacy)
+                print("[NotificationService] Removed legacy pending: \(legacy.count)")
+            } else {
+                print("[NotificationService] No legacy pending found")
+            }
+            completion?()
+        }
+    }
     
     func listScheduledNotifications() {
         center.getPendingNotificationRequests { requests in
@@ -109,7 +106,7 @@ class NotificationService: NSObject, UNUserNotificationCenterDelegate, Notificat
                                 willPresent notification: UNNotification,
                                 withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
         print("🔔 Будильник сработал: \(notification.request.content.body)")
-        completionHandler([.banner, .sound])
+        completionHandler([.banner, .sound, .list])
     }
     
     // Срабатывает, когда пользователь открыл уведомление

@@ -9,11 +9,13 @@ import SwiftUI
 
 struct ScheduleListView: View {
     private let repo: ScheduleRepository
+    private let planner: NotificationPlanning
     @StateObject private var vm: ScheduleListViewModel
     @State private var path: [Route] = []
 
-    init(repo: ScheduleRepository) {
+    init(repo: ScheduleRepository, planner: NotificationPlanning) {
         self.repo = repo
+        self.planner = planner
         _vm = StateObject(wrappedValue: ScheduleListViewModel(repo: repo))
     }
 
@@ -28,6 +30,7 @@ struct ScheduleListView: View {
                         Button(role: .destructive) {
                             if let idx = vm.items.firstIndex(where: { $0.id == schedule.id }) {
                                 vm.delete(at: IndexSet(integer: idx))
+                                planner.planAll(schedules: repo.getAll())
                             }
                         } label: {
                             Label("Удалить", systemImage: "trash")
@@ -71,6 +74,7 @@ struct ScheduleListView: View {
                 case .createOneTime:
                     EditOneTimeScheduleView(repo: repo, source: .create) {
                         vm.reload()
+                        planner.planAll(schedules: repo.getAll())
                     }
                 case .createShiftPattern:
                     Text("Сменный график — скоро")
@@ -80,6 +84,7 @@ struct ScheduleListView: View {
                     if case .oneTime = schedule.type {
                         EditOneTimeScheduleView(repo: repo, source: .edit(schedule)) {
                             vm.reload()
+                            planner.planAll(schedules: repo.getAll())
                         }
                     } else {
                         // Пока редактируем только .oneTime. Остальные — чтение.
