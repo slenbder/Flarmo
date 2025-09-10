@@ -26,12 +26,7 @@ struct NotificationFactory {
 
     private static func makeBody(for schedule: Schedule, fireDate: Date) -> String {
         // Небольшой, но полезный body — локализованный «во столько-то»
-        let df = DateFormatter()
-        df.locale = Locale(identifier: "ru_RU")
-        df.doesRelativeDateFormatting = true
-        df.dateStyle = .short
-        df.timeStyle = .short
-        let when = df.string(from: fireDate)
+        let when = bodyFormatter.string(from: fireDate)
 
         switch schedule.type {
         case .oneTime:
@@ -44,4 +39,13 @@ struct NotificationFactory {
             return "Выбранные даты — \(when)"
         }
     }
+
+    private static let bodyFormatter: DateFormatter = {
+        let df = DateFormatter()
+        df.locale = Locale(identifier: "ru_RU")
+        df.doesRelativeDateFormatting = true
+        df.dateStyle = .short
+        df.timeStyle = .short
+        return df
+    }()
 }

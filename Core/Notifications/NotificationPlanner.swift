@@ -225,12 +225,18 @@ final class NotificationPlanner: NotificationPlanning {
     }
 
     private func makeID(scheduleID: String, fireDate: Date) -> String {
+        let stamp = Self.idFormatter.string(from: fireDate)
+        return "flarmo.\(scheduleID).\(stamp)"
+    }
+}
+
+private extension NotificationPlanner {
+    static let idFormatter: DateFormatter = {
         let df = DateFormatter()
         df.calendar = Calendar(identifier: .gregorian)
         df.locale = Locale(identifier: "en_US_POSIX")
         df.timeZone = TimeZone.current
         df.dateFormat = "yyyyMMdd'T'HHmmZ"
-        let stamp = df.string(from: fireDate)
-        return "flarmo.\(scheduleID).\(stamp)"
-    }
+        return df
+    }()
 }

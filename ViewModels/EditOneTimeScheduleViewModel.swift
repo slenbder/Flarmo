@@ -21,12 +21,10 @@ final class EditOneTimeScheduleViewModel: ObservableObject {
 
     private let repo: ScheduleRepository
     private let mode: Mode
-    private let scheduler: NotificationsScheduling
 
-    init(repo: ScheduleRepository, mode: Mode, scheduler: NotificationsScheduling = NotificationSchedulerV2()) {
+    init(repo: ScheduleRepository, mode: Mode) {
         self.repo = repo
         self.mode = mode
-        self.scheduler = scheduler
 
         if case .edit(let s) = mode {
             name = s.name
@@ -45,7 +43,7 @@ final class EditOneTimeScheduleViewModel: ObservableObject {
         if isActive && date < Date() {
             print("⚠️ Warning: saving active one-time schedule in the past — will be marked as inactive")
         }
-        var schedule: Schedule
+        let schedule: Schedule
         switch mode {
         case .create:
             schedule = Schedule(
@@ -65,23 +63,19 @@ final class EditOneTimeScheduleViewModel: ObservableObject {
             )
         }
         repo.upsert(schedule)
-        // Reschedule notifications to reflect the latest state
-        let all = repo.getAll()
-        scheduler.reschedule(for: all)
         if let next = schedule.nextFireDate() {
-            print("✅ Saved & scheduled: \(schedule.name.isEmpty ? "Будильник" : schedule.name) at \(next)")
+            print("✅ Saved & scheduled: \(schedule.name.isEmpty ? \"Будильник\" : schedule.name) at \(next)")
         } else {
-            print("⏸ Saved (inactive or past): \(schedule.name.isEmpty ? "Будильник" : schedule.name)")
+            print("⏸ Saved (inactive or past): \(schedule.name.isEmpty ? \"Будильник\" : schedule.name)")
         }
+        let all = repo.getAll()
         print("💾 Repo now has \(all.count) schedules")
     }
 
     func deleteIfEditing() {
         if case .edit(let s) = mode {
             repo.delete(id: s.id)
-            // Reschedule after deletion
             let all = repo.getAll()
-            scheduler.reschedule(for: all)
             print("🗑 Deleted schedule: \(s.name.isEmpty ? s.id.uuidString : s.name)")
             print("💾 Repo now has \(all.count) schedules")
         }

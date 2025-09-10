@@ -13,7 +13,8 @@ final class FileScheduleRepository: ScheduleRepository {
     private let url: URL
 
     init(filename: String = "schedules.json") {
-        let dir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+        let dir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
+            ?? FileManager.default.temporaryDirectory
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         self.url = dir.appendingPathComponent(filename)
         load()

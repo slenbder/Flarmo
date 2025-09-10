@@ -24,27 +24,37 @@ extension Schedule {
     }
 
     /// Короткая подпись «Следующее срабатывание»
-    func nextFireLabel(now: Date = Date(), calendar: Calendar = .current, locale: Locale = .current) -> String {
+    func nextFireLabel(now: Date = Date(), calendar: Calendar = .current) -> String {
         guard let d = nextFireDate(from: now, calendar: calendar) else {
             return "Неактивно"
         }
 
         let isToday = calendar.isDate(d, inSameDayAs: now)
-        let df = DateFormatter()
-        df.locale = locale
         if isToday {
-            df.dateStyle = .none
-            df.timeStyle = .short
-            return "Сегодня, \(df.string(from: d))"
+            return "Сегодня, \(Self.timeFormatter.string(from: d))"
         } else if let tomorrow = calendar.date(byAdding: .day, value: 1, to: now),
                   calendar.isDate(d, inSameDayAs: tomorrow) {
-            df.dateStyle = .none
-            df.timeStyle = .short
-            return "Завтра, \(df.string(from: d))"
+            return "Завтра, \(Self.timeFormatter.string(from: d))"
         } else {
-            df.dateStyle = .medium
-            df.timeStyle = .short
-            return df.string(from: d)
+            return Self.dateTimeFormatter.string(from: d)
         }
     }
+}
+
+private extension Schedule {
+    static let timeFormatter: DateFormatter = {
+        let df = DateFormatter()
+        df.locale = .current
+        df.timeStyle = .short
+        df.dateStyle = .none
+        return df
+    }()
+
+    static let dateTimeFormatter: DateFormatter = {
+        let df = DateFormatter()
+        df.locale = .current
+        df.dateStyle = .medium
+        df.timeStyle = .short
+        return df
+    }()
 }
