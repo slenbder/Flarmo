@@ -13,7 +13,8 @@ final class InMemoryScheduleRepository: ScheduleRepository {
     private let fileURL: URL
 
     init(seed: [Schedule] = []) {
-        let dir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+        let dir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
+            ?? FileManager.default.temporaryDirectory
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         self.fileURL = dir.appendingPathComponent("schedules.json")
         self.load()

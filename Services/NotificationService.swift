@@ -8,13 +8,7 @@
 import Foundation
 import UserNotifications
 
-protocol NotificationScheduling: AnyObject {
-    func scheduleNotification(for alarm: Alarm)
-    func cancelNotification(for alarm: Alarm)
-    func updateNotification(for alarm: Alarm)
-}
-
-class NotificationService: NSObject, UNUserNotificationCenterDelegate, NotificationScheduling {
+class NotificationService: NSObject, UNUserNotificationCenterDelegate {
     static let shared = NotificationService()
     private let center = UNUserNotificationCenter.current()
     
@@ -36,25 +30,13 @@ class NotificationService: NSObject, UNUserNotificationCenterDelegate, Notificat
         }
     }
     
-    // MARK: - Scheduling
-    
-    @available(*, deprecated, message: "Deprecated. Use NotificationPlanner with Schedule instead.")
-    func scheduleNotification(for alarm: Alarm) {
-        // DEPRECATED: постановка уведомлений теперь делается через NotificationPlanner (этап E).
-        // Метод оставлен как no-op для сохранения бинарной совместимости.
-        print("[NotificationService] scheduleNotification(for:) is deprecated — ignored. Use NotificationPlanner.")
-    }
-    
-    @available(*, deprecated, message: "Deprecated. Use NotificationPlanner with Schedule instead.")
-    func cancelNotification(for alarm: Alarm) {
-        // DEPRECATED: отмена уведомлений выполняется через перепланирование NotificationPlanner.
-        print("[NotificationService] cancelNotification(for:) is deprecated — ignored. Use NotificationPlanner.")
-    }
-    
-    @available(*, deprecated, message: "Deprecated. Use NotificationPlanner with Schedule instead.")
-    func updateNotification(for alarm: Alarm) {
-        // DEPRECATED: обновление выполняется через перепланирование NotificationPlanner.
-        print("[NotificationService] updateNotification(for:) is deprecated — ignored. Use NotificationPlanner.")
+    // MARK: - Categories
+
+    func registerCategories() {
+        let snooze = UNNotificationAction(identifier: "SNOOZE_ACTION", title: "Отложить", options: [])
+        let stop = UNNotificationAction(identifier: "STOP_ACTION", title: "Выключить", options: [.destructive])
+        let category = UNNotificationCategory(identifier: "ALARM_CATEGORY", actions: [snooze, stop], intentIdentifiers: [], options: [])
+        center.setNotificationCategories([category])
     }
     
     // MARK: - Debug / Test

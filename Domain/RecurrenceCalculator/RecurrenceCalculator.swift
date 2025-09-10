@@ -84,7 +84,8 @@ private extension RecurrenceCalculator {
     }
 
     func nextDay(from day: Date, adding days: Int = 1) -> Date {
-        cfg.calendar.date(byAdding: .day, value: days, to: day)!
+        cfg.calendar.date(byAdding: .day, value: days, to: day)
+            ?? day.addingTimeInterval(TimeInterval(86400 * days))
     }
 
     func startOfDay(_ date: Date) -> Date {
