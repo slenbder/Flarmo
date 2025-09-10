@@ -28,7 +28,7 @@ struct FlarmoApp: App {
         )
         UNUserNotificationCenter.current().delegate = NotificationService.shared
         self.bootstrap = AppBootstrap(repo: appRepo)
-        NotificationSchedulerV2.registerCategories()
+        NotificationCategoriesRegistrar.register()
         bootstrap.start()
     }
 

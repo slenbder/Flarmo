@@ -23,7 +23,7 @@ final class EditOneTimeScheduleViewModel: ObservableObject {
     private let mode: Mode
     private let scheduler: NotificationsScheduling
 
-    init(repo: ScheduleRepository, mode: Mode, scheduler: NotificationsScheduling = NotificationSchedulerV2()) {
+    init(repo: ScheduleRepository, mode: Mode, scheduler: NotificationsScheduling = DefaultNotificationsScheduler()) {
         self.repo = repo
         self.mode = mode
         self.scheduler = scheduler
@@ -67,7 +67,7 @@ final class EditOneTimeScheduleViewModel: ObservableObject {
         repo.upsert(schedule)
         // Reschedule notifications to reflect the latest state
         let all = repo.getAll()
-        scheduler.reschedule(for: all)
+        scheduler.rescheduleAllIfNeeded()
         if let next = schedule.nextFireDate() {
             print("✅ Saved & scheduled: \(schedule.name.isEmpty ? "Будильник" : schedule.name) at \(next)")
         } else {
@@ -81,7 +81,7 @@ final class EditOneTimeScheduleViewModel: ObservableObject {
             repo.delete(id: s.id)
             // Reschedule after deletion
             let all = repo.getAll()
-            scheduler.reschedule(for: all)
+            scheduler.rescheduleAllIfNeeded()
             print("🗑 Deleted schedule: \(s.name.isEmpty ? s.id.uuidString : s.name)")
             print("💾 Repo now has \(all.count) schedules")
         }
