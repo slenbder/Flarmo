@@ -15,6 +15,7 @@ struct NotificationFactory {
         // В body выносим тип и время срабатывания
         content.body = makeBody(for: schedule, fireDate: fireDate)
         content.sound = .default
+        content.categoryIdentifier = "ALARM_ACTIONS"
 
         // Важно: использовать календарные компоненты пользователя (часовой пояс/ DST)
         let cal = Calendar.current

@@ -15,6 +15,7 @@ class NotificationService: NSObject, UNUserNotificationCenterDelegate {
     private override init() {
         super.init()
         center.delegate = self
+        registerCategories() // важно: экшены будут доступны уже на первом уведомлении
     }
     
     // MARK: - Permissions
@@ -33,9 +34,24 @@ class NotificationService: NSObject, UNUserNotificationCenterDelegate {
     // MARK: - Categories
 
     func registerCategories() {
-        let snooze = UNNotificationAction(identifier: "SNOOZE_ACTION", title: "Отложить", options: [])
-        let stop = UNNotificationAction(identifier: "STOP_ACTION", title: "Выключить", options: [.destructive])
-        let category = UNNotificationCategory(identifier: "ALARM_CATEGORY", actions: [snooze, stop], intentIdentifiers: [], options: [])
+        let snooze = UNNotificationAction(
+            identifier: "ALARM_SNOOZE",
+            title: "Отложить на 10 мин",
+            options: []
+        )
+        let stop = UNNotificationAction(
+            identifier: "ALARM_STOP",
+            title: "Выключить",
+            options: [.destructive]
+        )
+
+        let category = UNNotificationCategory(
+            identifier: "ALARM_ACTIONS",
+            actions: [snooze, stop],
+            intentIdentifiers: [],
+            options: [.customDismissAction]
+        )
+
         center.setNotificationCategories([category])
     }
     
@@ -82,20 +98,52 @@ class NotificationService: NSObject, UNUserNotificationCenterDelegate {
     }
     
     // MARK: - UNUserNotificationCenterDelegate
-    
-    // Срабатывает, когда уведомление приходит, а приложение активно
+
+    // Показывать уведомление даже при активном приложении (баннер + звук + в список)
     func userNotificationCenter(_ center: UNUserNotificationCenter,
                                 willPresent notification: UNNotification,
                                 withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-        print("🔔 Будильник сработал: \(notification.request.content.body)")
         completionHandler([.banner, .sound, .list])
     }
     
-    // Срабатывает, когда пользователь открыл уведомление
+    // Срабатывает, когда пользователь нажал кнопку в уведомлении
     func userNotificationCenter(_ center: UNUserNotificationCenter,
                                 didReceive response: UNNotificationResponse,
                                 withCompletionHandler completionHandler: @escaping () -> Void) {
-        print("👉 Пользователь открыл уведомление: \(response.notification.request.identifier)")
+
+        let req = response.notification.request
+
+        switch response.actionIdentifier {
+        case "ALARM_SNOOZE":
+            // Клонируем контент и ставим пуш на +10 минут
+            let newContent = (req.content.mutableCopy() as? UNMutableNotificationContent) ?? UNMutableNotificationContent()
+            newContent.title = req.content.title
+            newContent.body = req.content.body
+            newContent.sound = .default
+            newContent.categoryIdentifier = "ALARM_ACTIONS"
+
+            let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 10 * 60, repeats: false)
+            let newId = req.identifier + "_snooze_" + String(Int(Date().timeIntervalSince1970))
+            let newReq = UNNotificationRequest(identifier: newId, content: newContent, trigger: trigger)
+            center.add(newReq) { error in
+                if let error = error {
+                    print("❌ Snooze add error: \(error)")
+                } else {
+                    print("⏰ Snoozed +10m → id=\(newId)")
+                }
+            }
+
+        case "ALARM_STOP":
+            // Удаляем будущие pending для исходного id
+            center.removePendingNotificationRequests(withIdentifiers: [req.identifier])
+            print("🛑 Stopped pending id=\(req.identifier)")
+
+        default:
+            break
+        }
+
+        // лог открытия уведомления оставляем как есть
+        print("👉 Пользователь открыл уведомление: \(req.identifier)")
         completionHandler()
     }
 }
