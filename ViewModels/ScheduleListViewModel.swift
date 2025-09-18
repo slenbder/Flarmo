@@ -12,14 +12,18 @@ import Combine
 final class ScheduleListViewModel: ObservableObject {
     @Published private(set) var items: [Schedule] = []
     private let repo: ScheduleRepository
+    private var cancellables: Set<AnyCancellable> = []
 
     init(repo: ScheduleRepository) {
         self.repo = repo
+        setupBindings()
         reload()
     }
 
     func reload() {
-        items = repo.getAll().sorted(by: { (a, b) in
+        let all = repo.getAll()
+        let before = items.count
+        items = all.sorted(by: { (a, b) in
             // Сначала активные с ближайшим срабатыванием, потом неактивные/прошедшие
             let na = a.nextFireDate() ?? .distantFuture
             let nb = b.nextFireDate() ?? .distantFuture
@@ -28,13 +32,44 @@ final class ScheduleListViewModel: ObservableObject {
             }
             return na < nb
         })
+        let after = items.count
+        print("[VM] reload() items: before=\(before) after=\(after)")
+        if !items.isEmpty {
+            let summary = items.prefix(3).map { s -> String in
+                let nextStr = s.nextFireDate().map { "\($0)" } ?? "nil"
+                return "\(s.name.isEmpty ? s.id.uuidString : s.name)[\(s.id)] next=\(nextStr)"
+            }.joined(separator: " | ")
+            print("[VM] top items: \(summary)\(items.count > 3 ? " ..." : "")")
+        }
     }
 
     func delete(at offsets: IndexSet) {
         for idx in offsets {
             let s = items[idx]
+            print("[VM] delete request id=\(s.id) name=\(s.name)")
             repo.delete(id: s.id)
         }
+        // Локально обновим сразу; событие из репозитория тоже придёт
         reload()
     }
+
+    private func setupBindings() {
+        repo.changes
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] change in
+                switch change {
+                case .inserted(let ids):
+                    print("[VM] repo change: inserted ids=\(Array(ids))")
+                case .updated(let ids):
+                    print("[VM] repo change: updated ids=\(Array(ids))")
+                case .deleted(let ids):
+                    print("[VM] repo change: deleted ids=\(Array(ids))")
+                case .snapshot:
+                    print("[VM] repo change: snapshot")
+                }
+                self?.reload()
+            }
+            .store(in: &cancellables)
+    }
 }
+

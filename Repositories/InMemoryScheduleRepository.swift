@@ -6,11 +6,16 @@
 //
 
 import Foundation
+import Combine
 
 final class InMemoryScheduleRepository: ScheduleRepository {
     private var store: [UUID: Schedule] = [:]
     private let queue = DispatchQueue(label: "InMemoryScheduleRepository.queue", qos: .utility)
     private let fileURL: URL
+
+    // Change stream
+    private let subject = PassthroughSubject<RepositoryChange, Never>()
+    var changes: AnyPublisher<RepositoryChange, Never> { subject.eraseToAnyPublisher() }
 
     init(seed: [Schedule] = []) {
         let dir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
@@ -20,19 +25,60 @@ final class InMemoryScheduleRepository: ScheduleRepository {
         self.load()
         seed.forEach { store[$0.id] = $0 }
         self.persist()
+        print("[Repo:Memory] Initialized with \(store.count) items")
     }
 
     func getAll() -> [Schedule] { queue.sync { Array(store.values) } }
-    func upsert(_ schedule: Schedule) { queue.sync { store[schedule.id] = schedule; persist() } }
-    func delete(id: UUID) { queue.sync { store.removeValue(forKey: id); persist() } }
-
     func getById(_ id: UUID) -> Schedule? { queue.sync { store[id] } }
 
+    func upsert(_ schedule: Schedule) {
+        var wasInserted = false
+        queue.sync {
+            let existed = store[schedule.id] != nil
+            store[schedule.id] = schedule
+            persist()
+            wasInserted = !existed
+        }
+        if wasInserted {
+            print("[Repo:Memory] insert id=\(schedule.id) name=\(schedule.name)")
+            subject.send(.inserted([schedule.id]))
+            print("[Repo:Memory] change -> inserted ids={\(schedule.id)}")
+        } else {
+            print("[Repo:Memory] update id=\(schedule.id) name=\(schedule.name)")
+            subject.send(.updated([schedule.id]))
+            print("[Repo:Memory] change -> updated ids={\(schedule.id)}")
+        }
+    }
+
+    func delete(id: UUID) {
+        var didRemove = false
+        var removedName: String?
+        queue.sync {
+            if let removed = store.removeValue(forKey: id) {
+                removedName = removed.name
+                didRemove = true
+                persist()
+            }
+        }
+        if didRemove {
+            print("[Repo:Memory] delete id=\(id) name=\(removedName ?? "")")
+            subject.send(.deleted([id]))
+            print("[Repo:Memory] change -> deleted ids={\(id)}")
+        } else {
+            print("[Repo:Memory] delete skipped (not found) id=\(id)")
+        }
+    }
+
     func updateOneTimeSchedule(id: UUID, newDate: Date) {
+        var changed = false
+        var oldDate: Date?
+        var name: String = ""
         queue.sync {
             guard let existing = store[id] else { return }
+            name = existing.name
             switch existing.type {
-            case .oneTime:
+            case .oneTime(let prev):
+                oldDate = prev
                 let updated = Schedule(
                     id: existing.id,
                     name: existing.name,
@@ -43,16 +89,26 @@ final class InMemoryScheduleRepository: ScheduleRepository {
                 )
                 store[id] = updated
                 persist()
+                changed = true
             default:
-                // Для нерazовых расписаний изменение даты через этот метод не применяется
                 return
             }
+        }
+        if changed {
+            print("[Repo:Memory] updateOneTime id=\(id) name=\(name) \(oldDate.map { "from=\($0)" } ?? "from=?") -> to=\(newDate)")
+            subject.send(.updated([id]))
+            print("[Repo:Memory] change -> updated ids={\(id)}")
+        } else {
+            print("[Repo:Memory] updateOneTime skipped (not found or not oneTime) id=\(id)")
         }
     }
 
     func setActive(_ isActive: Bool, id: UUID) {
+        var changed = false
+        var name: String = ""
         queue.sync {
             guard let existing = store[id] else { return }
+            name = existing.name
             let updated = Schedule(
                 id: existing.id,
                 name: existing.name,
@@ -63,6 +119,14 @@ final class InMemoryScheduleRepository: ScheduleRepository {
             )
             store[id] = updated
             persist()
+            changed = true
+        }
+        if changed {
+            print("[Repo:Memory] setActive id=\(id) name=\(name) -> \(isActive)")
+            subject.send(.updated([id]))
+            print("[Repo:Memory] change -> updated ids={\(id)}")
+        } else {
+            print("[Repo:Memory] setActive skipped (not found) id=\(id)")
         }
     }
 }
@@ -70,28 +134,26 @@ final class InMemoryScheduleRepository: ScheduleRepository {
 // MARK: - Persistence
 private extension InMemoryScheduleRepository {
     func load() {
-        print("💾 Loading schedules from: \(fileURL.path)")
+        print("[Repo:Memory] Loading from: \(fileURL.path)")
         guard let data = try? Data(contentsOf: fileURL) else { return }
         do {
             let decoded = try JSONDecoder().decode([ScheduleDTO].self, from: data)
             self.store = Dictionary(uniqueKeysWithValues: decoded.map { ($0.id, $0.model) })
-            print("💾 Loaded \(store.count) schedules from disk")
+            print("[Repo:Memory] Loaded \(store.count) items")
         } catch {
-            print("❌ Failed to load schedules: \(error)")
+            print("❌ [Repo:Memory] Failed to load: \(error)")
         }
     }
 
     func persist() {
         do {
             let arr = store.values.map { ScheduleDTO($0) }
-            print("💾 Persisting \(arr.count) schedules to: \(fileURL.path)")
             let data = try JSONEncoder().encode(arr)
             let tmpURL = fileURL.appendingPathExtension("tmp")
             try data.write(to: tmpURL, options: .atomic)
             try? FileManager.default.replaceItemAt(fileURL, withItemAt: tmpURL)
-            print("💾 Persist successful")
         } catch {
-            print("❌ Failed to persist schedules: \(error)")
+            print("❌ [Repo:Memory] Failed to persist: \(error)")
         }
     }
 }
@@ -148,3 +210,4 @@ private enum ScheduleTypeDTO: Codable {
         }
     }
 }
+
