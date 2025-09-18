@@ -65,7 +65,7 @@ final class EditOneTimeScheduleViewModel: ObservableObject {
         repo.upsert(schedule)
         if let next = schedule.nextFireDate() {
             print("✅ Saved & scheduled: \(schedule.name.isEmpty ? "Будильник" : schedule.name) at \(next)")
-            
+        } else {
             print("⏸ Saved (inactive or past): \(schedule.name.isEmpty ? "Будильник" : schedule.name)")
         }
         let all = repo.getAll()
@@ -81,3 +81,4 @@ final class EditOneTimeScheduleViewModel: ObservableObject {
         }
     }
 }
+

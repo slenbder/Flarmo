@@ -25,8 +25,11 @@ struct FlarmoApp: App {
             center: UNUserNotificationCenter.current(),
             nowProvider: Date.init
         )
+        // Делегат и категории
         UNUserNotificationCenter.current().delegate = NotificationService.shared
         NotificationService.shared.registerCategories()
+        // Инъекция зависимостей в NotificationService
+        NotificationService.shared.configure(repo: appRepo, planner: planner)
         AppBootstrap(repo: appRepo).start()
     }
 
@@ -55,3 +58,4 @@ struct FlarmoApp: App {
         }
     }
 }
+

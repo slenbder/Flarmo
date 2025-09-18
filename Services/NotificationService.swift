@@ -11,11 +11,19 @@ import UserNotifications
 class NotificationService: NSObject, UNUserNotificationCenterDelegate {
     static let shared = NotificationService()
     private let center = UNUserNotificationCenter.current()
+    private var repo: ScheduleRepository?
+    private var planner: NotificationPlanning?
+    private var namespacePrefix: String { "flarmo." }
     
     private override init() {
         super.init()
         center.delegate = self
         registerCategories() // важно: экшены будут доступны уже на первом уведомлении
+    }
+    
+    func configure(repo: ScheduleRepository, planner: NotificationPlanning) {
+        self.repo = repo
+        self.planner = planner
     }
     
     // MARK: - Permissions
@@ -32,11 +40,11 @@ class NotificationService: NSObject, UNUserNotificationCenterDelegate {
     }
     
     // MARK: - Categories
-
+    
     func registerCategories() {
         let snooze = UNNotificationAction(
             identifier: "ALARM_SNOOZE",
-            title: "Отложить на 10 мин",
+            title: "Отложить на 1 мин",
             options: []
         )
         let stop = UNNotificationAction(
@@ -44,14 +52,14 @@ class NotificationService: NSObject, UNUserNotificationCenterDelegate {
             title: "Выключить",
             options: [.destructive]
         )
-
+        
         let category = UNNotificationCategory(
             identifier: "ALARM_ACTIONS",
             actions: [snooze, stop],
             intentIdentifiers: [],
             options: [.customDismissAction]
         )
-
+        
         center.setNotificationCategories([category])
     }
     
@@ -97,8 +105,16 @@ class NotificationService: NSObject, UNUserNotificationCenterDelegate {
         }
     }
     
+    // MARK: - Helpers
+    private func extractScheduleId(from requestId: String) -> UUID? {
+        // ожидаем формат "flarmo.<uuid>.<...>"
+        let parts = requestId.split(separator: ".")
+        guard parts.count >= 3 else { return nil }
+        return UUID(uuidString: String(parts[1]))
+    }
+    
     // MARK: - UNUserNotificationCenterDelegate
-
+    
     // Показывать уведомление даже при активном приложении (баннер + звук + в список)
     func userNotificationCenter(_ center: UNUserNotificationCenter,
                                 willPresent notification: UNNotification,
@@ -110,40 +126,61 @@ class NotificationService: NSObject, UNUserNotificationCenterDelegate {
     func userNotificationCenter(_ center: UNUserNotificationCenter,
                                 didReceive response: UNNotificationResponse,
                                 withCompletionHandler completionHandler: @escaping () -> Void) {
-
+        
         let req = response.notification.request
-
+        
         switch response.actionIdentifier {
         case "ALARM_SNOOZE":
-            // Клонируем контент и ставим пуш на +10 минут
-            let newContent = (req.content.mutableCopy() as? UNMutableNotificationContent) ?? UNMutableNotificationContent()
-            newContent.title = req.content.title
-            newContent.body = req.content.body
-            newContent.sound = .default
-            newContent.categoryIdentifier = "ALARM_ACTIONS"
-
-            let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 10 * 60, repeats: false)
-            let newId = req.identifier + "_snooze_" + String(Int(Date().timeIntervalSince1970))
-            let newReq = UNNotificationRequest(identifier: newId, content: newContent, trigger: trigger)
-            center.add(newReq) { error in
-                if let error = error {
-                    print("❌ Snooze add error: \(error)")
-                } else {
-                    print("⏰ Snoozed +10m → id=\(newId)")
-                }
+            // Snooze = +60 секунд (для тестов)
+            guard
+                let repo = repo,
+                let planner = planner,
+                let scheduleId = extractScheduleId(from: req.identifier),
+                let existing = repo.getById(scheduleId)
+            else {
+                completionHandler()
+                return
             }
-
+            
+            let newDate = Date().addingTimeInterval(60) // тест: snooze на 1 минуту
+            
+            // Обновляем дату для разового расписания через специализированный метод репозитория
+            repo.updateOneTimeSchedule(id: scheduleId, newDate: newDate)
+            
+            // Перепланируем только это расписание (если оно ещё существует)
+            if let updated = repo.getById(scheduleId) {
+                planner.plan(for: updated)
+            } else {
+                // На всякий случай — глобальный пересчёт
+                planner.planAll(schedules: repo.getAll())
+            }
+            print("⏰ Snoozed +1m for schedule=\(existing.name.isEmpty ? existing.id.uuidString : existing.name)")
+            completionHandler()
+            
         case "ALARM_STOP":
-            // Удаляем будущие pending для исходного id
-            center.removePendingNotificationRequests(withIdentifiers: [req.identifier])
-            print("🛑 Stopped pending id=\(req.identifier)")
-
+            // Деактивируем запись и перепланируем
+            guard
+                let repo = repo,
+                let planner = planner,
+                let scheduleId = extractScheduleId(from: req.identifier)
+            else {
+                completionHandler()
+                return
+            }
+            
+            repo.setActive(false, id: scheduleId)
+            if let updated = repo.getById(scheduleId) {
+                planner.plan(for: updated)
+            } else {
+                planner.planAll(schedules: repo.getAll())
+            }
+            print("🛑 Stopped schedule=\(scheduleId)")
+            completionHandler()
+            
         default:
-            break
+            completionHandler()
         }
-
-        // лог открытия уведомления оставляем как есть
-        print("👉 Пользователь открыл уведомление: \(req.identifier)")
-        completionHandler()
+        
     }
 }
+

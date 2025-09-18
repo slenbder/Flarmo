@@ -27,5 +27,7 @@ final class AppBootstrap {
         migrator.runIfNeeded()
         let all = repo.getAll()
         print("[AppBootstrap] Loaded \(all.count) schedules from repo")
+        // Конфигурацию NotificationService выполняем в FlarmoApp.init()
+        // NotificationService.shared.configure(repo: repo, planner: ...)
     }
 }

@@ -38,6 +38,48 @@ final class FileScheduleRepository: ScheduleRepository {
         }
     }
 
+    func getById(_ id: UUID) -> Schedule? {
+        return queue.sync { store[id] }
+    }
+
+    func updateOneTimeSchedule(id: UUID, newDate: Date) {
+        queue.sync {
+            guard let existing = store[id] else { return }
+            switch existing.type {
+            case .oneTime:
+                let updated = Schedule(
+                    id: existing.id,
+                    name: existing.name,
+                    colorId: existing.colorId,
+                    toneId: existing.toneId,
+                    type: .oneTime(date: newDate),
+                    isActive: existing.isActive
+                )
+                store[id] = updated
+                persist()
+            default:
+                // Для нe-разовых расписаний этот метод не применяется
+                return
+            }
+        }
+    }
+
+    func setActive(_ isActive: Bool, id: UUID) {
+        queue.sync {
+            guard let existing = store[id] else { return }
+            let updated = Schedule(
+                id: existing.id,
+                name: existing.name,
+                colorId: existing.colorId,
+                toneId: existing.toneId,
+                type: existing.type,
+                isActive: isActive
+            )
+            store[id] = updated
+            persist()
+        }
+    }
+
     // MARK: - Persistence
     private func load() {
         queue.sync {
