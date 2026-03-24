@@ -16,6 +16,7 @@ struct EditShiftPatternScheduleView: View {
     let onSaved: () -> Void
     private let sourceKind: Source
     @FocusState private var nameFocused: Bool
+    @State private var isEditingCycle = false
 
     init(repo: ScheduleRepository, source: Source, onSaved: @escaping () -> Void) {
         switch source {
@@ -50,32 +51,43 @@ struct EditShiftPatternScheduleView: View {
             }
 
             Section("График") {
-                HStack(spacing: 0) {
-                    Text("Работа")
-                        .frame(maxWidth: .infinity)
-                    Picker("Работа", selection: $vm.onDays) {
-                        ForEach(1...14, id: \.self) { n in
-                            Text("\(n) д.").tag(n)
-                        }
-                    }
-                    .pickerStyle(.wheel)
-                    .frame(maxWidth: .infinity)
-                    .clipped()
-
-                    Divider()
-
-                    Text("Отдых")
-                        .frame(maxWidth: .infinity)
-                    Picker("Отдых", selection: $vm.offDays) {
-                        ForEach(1...14, id: \.self) { n in
-                            Text("\(n) д.").tag(n)
-                        }
-                    }
-                    .pickerStyle(.wheel)
-                    .frame(maxWidth: .infinity)
-                    .clipped()
+                HStack {
+                    Text("Рабочие/выходные дни")
+                    Spacer()
+                    Text("\(vm.onDays)/\(vm.offDays)")
+                        .foregroundStyle(.secondary)
                 }
-                .frame(height: 120)
+                .contentShape(Rectangle())
+                .onTapGesture { isEditingCycle.toggle() }
+
+                if isEditingCycle {
+                    HStack(spacing: 0) {
+                        Text("Работа")
+                            .frame(maxWidth: .infinity)
+                        Picker("Работа", selection: $vm.onDays) {
+                            ForEach(1...14, id: \.self) { n in
+                                Text("\(n) д.").tag(n)
+                            }
+                        }
+                        .pickerStyle(.wheel)
+                        .frame(maxWidth: .infinity)
+                        .clipped()
+
+                        Divider()
+
+                        Text("Отдых")
+                            .frame(maxWidth: .infinity)
+                        Picker("Отдых", selection: $vm.offDays) {
+                            ForEach(1...14, id: \.self) { n in
+                                Text("\(n) д.").tag(n)
+                            }
+                        }
+                        .pickerStyle(.wheel)
+                        .frame(maxWidth: .infinity)
+                        .clipped()
+                    }
+                    .frame(height: 120)
+                }
             }
 
             Section("Стартовая дата") {
@@ -87,7 +99,7 @@ struct EditShiftPatternScheduleView: View {
 
             Section("Время срабатывания") {
                 DatePicker("Время", selection: $vm.time, displayedComponents: .hourAndMinute)
-                    .datePickerStyle(.wheel)
+                    .datePickerStyle(.compact)
                     .environment(\.locale, Locale(identifier: "ru_RU"))
                     .onChange(of: vm.time) { nameFocused = false }
             }

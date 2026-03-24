@@ -56,10 +56,13 @@ struct EditOneTimeScheduleView: View {
             }
 
             Section("Дата и время") {
-                DatePicker("Дата и время", selection: $vm.date, displayedComponents: [.date, .hourAndMinute])
+                DatePicker("Дата", selection: $vm.date, displayedComponents: [.date])
                     .datePickerStyle(.compact)
                     .environment(\.locale, Locale(identifier: "ru_RU"))
                     .onChange(of: vm.date) { print("[UI] date changed to \(vm.date)"); nameFocused = false }
+                DatePicker("Время", selection: $vm.date, displayedComponents: [.hourAndMinute])
+                    .datePickerStyle(.compact)
+                    .environment(\.locale, Locale(identifier: "ru_RU"))
             }
             
             if isPast {
