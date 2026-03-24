@@ -57,7 +57,7 @@ struct EditOneTimeScheduleView: View {
 
             Section("Дата и время") {
                 DatePicker("Дата и время", selection: $vm.date, displayedComponents: [.date, .hourAndMinute])
-                    .datePickerStyle(.graphical)
+                    .datePickerStyle(.compact)
                     .environment(\.locale, Locale(identifier: "ru_RU"))
                     .onChange(of: vm.date) { print("[UI] date changed to \(vm.date)"); nameFocused = false }
             }

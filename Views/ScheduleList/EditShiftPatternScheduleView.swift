@@ -50,13 +50,37 @@ struct EditShiftPatternScheduleView: View {
             }
 
             Section("График") {
-                Stepper("Рабочих дней: \(vm.onDays)", value: $vm.onDays, in: 1...14)
-                Stepper("Выходных дней: \(vm.offDays)", value: $vm.offDays, in: 0...14)
+                HStack(spacing: 0) {
+                    Text("Работа")
+                        .frame(maxWidth: .infinity)
+                    Picker("Работа", selection: $vm.onDays) {
+                        ForEach(1...14, id: \.self) { n in
+                            Text("\(n) д.").tag(n)
+                        }
+                    }
+                    .pickerStyle(.wheel)
+                    .frame(maxWidth: .infinity)
+                    .clipped()
+
+                    Divider()
+
+                    Text("Отдых")
+                        .frame(maxWidth: .infinity)
+                    Picker("Отдых", selection: $vm.offDays) {
+                        ForEach(1...14, id: \.self) { n in
+                            Text("\(n) д.").tag(n)
+                        }
+                    }
+                    .pickerStyle(.wheel)
+                    .frame(maxWidth: .infinity)
+                    .clipped()
+                }
+                .frame(height: 120)
             }
 
             Section("Стартовая дата") {
                 DatePicker("Начало цикла", selection: $vm.startDate, displayedComponents: .date)
-                    .datePickerStyle(.graphical)
+                    .datePickerStyle(.compact)
                     .environment(\.locale, Locale(identifier: "ru_RU"))
                     .onChange(of: vm.startDate) { nameFocused = false }
             }

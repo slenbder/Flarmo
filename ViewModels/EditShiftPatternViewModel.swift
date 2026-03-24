@@ -51,7 +51,7 @@ final class EditShiftPatternViewModel: ObservableObject {
     }
 
     var canSave: Bool {
-        !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && onDays > 0 && offDays >= 0
+        !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && onDays >= 1 && offDays >= 1
     }
 
     func save() {
