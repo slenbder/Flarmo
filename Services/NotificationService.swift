@@ -8,19 +8,22 @@
 import Foundation
 import UserNotifications
 
-protocol NotificationScheduling: AnyObject {
-    func scheduleNotification(for alarm: Alarm)
-    func cancelNotification(for alarm: Alarm)
-    func updateNotification(for alarm: Alarm)
-}
-
-class NotificationService: NSObject, UNUserNotificationCenterDelegate, NotificationScheduling {
+class NotificationService: NSObject, UNUserNotificationCenterDelegate {
     static let shared = NotificationService()
     private let center = UNUserNotificationCenter.current()
+    private var repo: ScheduleRepository?
+    private var planner: NotificationPlanning?
+    private var namespacePrefix: String { "flarmo." }
     
     private override init() {
         super.init()
         center.delegate = self
+        registerCategories() // важно: экшены будут доступны уже на первом уведомлении
+    }
+    
+    func configure(repo: ScheduleRepository, planner: NotificationPlanning) {
+        self.repo = repo
+        self.planner = planner
     }
     
     // MARK: - Permissions
@@ -36,25 +39,28 @@ class NotificationService: NSObject, UNUserNotificationCenterDelegate, Notificat
         }
     }
     
-    // MARK: - Scheduling
+    // MARK: - Categories
     
-    @available(*, deprecated, message: "Deprecated. Use NotificationPlanner with Schedule instead.")
-    func scheduleNotification(for alarm: Alarm) {
-        // DEPRECATED: постановка уведомлений теперь делается через NotificationPlanner (этап E).
-        // Метод оставлен как no-op для сохранения бинарной совместимости.
-        print("[NotificationService] scheduleNotification(for:) is deprecated — ignored. Use NotificationPlanner.")
-    }
-    
-    @available(*, deprecated, message: "Deprecated. Use NotificationPlanner with Schedule instead.")
-    func cancelNotification(for alarm: Alarm) {
-        // DEPRECATED: отмена уведомлений выполняется через перепланирование NotificationPlanner.
-        print("[NotificationService] cancelNotification(for:) is deprecated — ignored. Use NotificationPlanner.")
-    }
-    
-    @available(*, deprecated, message: "Deprecated. Use NotificationPlanner with Schedule instead.")
-    func updateNotification(for alarm: Alarm) {
-        // DEPRECATED: обновление выполняется через перепланирование NotificationPlanner.
-        print("[NotificationService] updateNotification(for:) is deprecated — ignored. Use NotificationPlanner.")
+    func registerCategories() {
+        let snooze = UNNotificationAction(
+            identifier: "ALARM_SNOOZE",
+            title: "Отложить на 1 мин",
+            options: []
+        )
+        let stop = UNNotificationAction(
+            identifier: "ALARM_STOP",
+            title: "Выключить",
+            options: [.destructive]
+        )
+        
+        let category = UNNotificationCategory(
+            identifier: "ALARM_ACTIONS",
+            actions: [snooze, stop],
+            intentIdentifiers: [],
+            options: [.customDismissAction]
+        )
+        
+        center.setNotificationCategories([category])
     }
     
     // MARK: - Debug / Test
@@ -99,21 +105,82 @@ class NotificationService: NSObject, UNUserNotificationCenterDelegate, Notificat
         }
     }
     
+    // MARK: - Helpers
+    private func extractScheduleId(from requestId: String) -> UUID? {
+        // ожидаем формат "flarmo.<uuid>.<...>"
+        let parts = requestId.split(separator: ".")
+        guard parts.count >= 3 else { return nil }
+        return UUID(uuidString: String(parts[1]))
+    }
+    
     // MARK: - UNUserNotificationCenterDelegate
     
-    // Срабатывает, когда уведомление приходит, а приложение активно
+    // Показывать уведомление даже при активном приложении (баннер + звук + в список)
     func userNotificationCenter(_ center: UNUserNotificationCenter,
                                 willPresent notification: UNNotification,
                                 withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-        print("🔔 Будильник сработал: \(notification.request.content.body)")
         completionHandler([.banner, .sound, .list])
     }
     
-    // Срабатывает, когда пользователь открыл уведомление
+    // Срабатывает, когда пользователь нажал кнопку в уведомлении
     func userNotificationCenter(_ center: UNUserNotificationCenter,
                                 didReceive response: UNNotificationResponse,
                                 withCompletionHandler completionHandler: @escaping () -> Void) {
-        print("👉 Пользователь открыл уведомление: \(response.notification.request.identifier)")
-        completionHandler()
+        
+        let req = response.notification.request
+        
+        switch response.actionIdentifier {
+        case "ALARM_SNOOZE":
+            // Snooze = +60 секунд (для тестов)
+            guard
+                let repo = repo,
+                let planner = planner,
+                let scheduleId = extractScheduleId(from: req.identifier),
+                let existing = repo.getById(scheduleId)
+            else {
+                completionHandler()
+                return
+            }
+            
+            let newDate = Date().addingTimeInterval(60) // тест: snooze на 1 минуту
+            
+            // Обновляем дату для разового расписания через специализированный метод репозитория
+            repo.updateOneTimeSchedule(id: scheduleId, newDate: newDate)
+            
+            // Перепланируем только это расписание (если оно ещё существует)
+            if let updated = repo.getById(scheduleId) {
+                planner.plan(for: updated)
+            } else {
+                // На всякий случай — глобальный пересчёт
+                planner.planAll(schedules: repo.getAll())
+            }
+            print("⏰ Snoozed +1m for schedule=\(existing.name.isEmpty ? existing.id.uuidString : existing.name)")
+            completionHandler()
+            
+        case "ALARM_STOP":
+            // Деактивируем запись и перепланируем
+            guard
+                let repo = repo,
+                let planner = planner,
+                let scheduleId = extractScheduleId(from: req.identifier)
+            else {
+                completionHandler()
+                return
+            }
+            
+            repo.setActive(false, id: scheduleId)
+            if let updated = repo.getById(scheduleId) {
+                planner.plan(for: updated)
+            } else {
+                planner.planAll(schedules: repo.getAll())
+            }
+            print("🛑 Stopped schedule=\(scheduleId)")
+            completionHandler()
+            
+        default:
+            completionHandler()
+        }
+        
     }
 }
+

@@ -16,7 +16,6 @@ struct FlarmoApp: App {
     // private let appRepo: ScheduleRepository = InMemoryScheduleRepository()
     private let appRepo = FileScheduleRepository()  // ← вот так
     @Environment(\.scenePhase) private var scenePhase
-    private let bootstrap: AppBootstrap
     @State private var lastPlanAllAt: Date = .distantPast
 
     init() {
@@ -26,10 +25,12 @@ struct FlarmoApp: App {
             center: UNUserNotificationCenter.current(),
             nowProvider: Date.init
         )
+        // Делегат и категории
         UNUserNotificationCenter.current().delegate = NotificationService.shared
-        self.bootstrap = AppBootstrap(repo: appRepo)
-        NotificationSchedulerV2.registerCategories()
-        bootstrap.start()
+        NotificationService.shared.registerCategories()
+        // Инъекция зависимостей в NotificationService
+        NotificationService.shared.configure(repo: appRepo, planner: planner)
+        AppBootstrap(repo: appRepo).start()
     }
 
     var body: some Scene {
@@ -48,7 +49,6 @@ struct FlarmoApp: App {
         }
         .onChange(of: scenePhase) { phase in
             if phase == .active {
-                bootstrap.sceneBecameActive()
                 let now = Date()
                 if now.timeIntervalSince(lastPlanAllAt) > 2 {
                     planner.planAll(schedules: appRepo.getAll())
@@ -58,3 +58,4 @@ struct FlarmoApp: App {
         }
     }
 }
+

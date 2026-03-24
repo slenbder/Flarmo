@@ -123,54 +123,36 @@ final class NotificationPlanner: NotificationPlanning {
 
             self.log("candidates total=\(candidates.count)")
 
-            // 3) Убрать то, что уже стоит (и есть у нас в реестре)
+            // 3) Глобальный лимит 60 — обрезаем по ближайшим датам
+            candidates.sort { $0.1 < $1.1 }
+            let desired = candidates.prefix(maxTotal)
+            let desiredIDs: Set<String> = Set(desired.map { $0.2 })
+            self.log("desired after cap(\(maxTotal))=\(desired.count)")
+
+            // 4) Текущее известное состояние
             let currentKnown = self.registry.ids.intersection(systemIDs)
-            var fresh: [(Schedule, Date, String)] = candidates.filter { !currentKnown.contains($0.2) }
 
-            self.log("already known pending kept=\(candidates.count - fresh.count), fresh to add before cap=\(fresh.count)")
+            // 5) Посчитать разницу множеств
+            let toAdd = desiredIDs.subtracting(currentKnown)
+            let toRemove = currentKnown.subtracting(desiredIDs)
 
-            // 4) Глобальный лимит 60 — обрезаем по ближайшим датам
-            fresh.sort { $0.1 < $1.1 }
-            if fresh.count > maxTotal {
-                fresh = Array(fresh.prefix(maxTotal))
+            self.log("toAdd=\(toAdd.count), toRemove=\(toRemove.count)")
+
+            // 6) Снять устаревшие
+            if !toRemove.isEmpty {
+                self.center.remove(withIDs: Array(toRemove))
+                self.registry.remove(toRemove)
+                self.log("removed old ids=\(toRemove.count)")
             }
 
-            self.log("fresh to add after cap(\(maxTotal))=\(fresh.count)")
-
-            // 5) Посчитать новые id по расписаниям (для таргетированной чистки старых)
-            let freshIDsBySchedule = Dictionary(grouping: fresh, by: { $0.0.id }).mapValues { Set($0.map { $0.2 }) }
-
-            // 6) Для каждого расписания снять устаревшие ID (которые числятся в системе + реестре, но не попали в новый набор)
-            var idsToRemoveTotal: Set<String> = []
-            for s in active {
-                let prefix = "flarmo.\(s.id.uuidString)."
-                let existingForSchedule = currentKnown.filter { $0.hasPrefix(prefix) }
-                let keep = freshIDsBySchedule[s.id] ?? []
-                let remove = existingForSchedule.subtracting(keep)
-                idsToRemoveTotal.formUnion(remove)
-            }
-
-            self.log("will remove old ids=\(idsToRemoveTotal.count)")
-
-            if !idsToRemoveTotal.isEmpty {
-                self.center.remove(withIDs: Array(idsToRemoveTotal))
-                self.registry.remove(idsToRemoveTotal)
-                self.log("removed old ids=\(idsToRemoveTotal.count)")
-            }
-
-            // 7) Добавить новые pending
-            var idsAdded: Set<String> = []
-            for (schedule, date, id) in fresh {
-                let req = NotificationFactory.makeRequest(schedule: schedule, fireDate: date, id: id)
-                self.center.add(req)
-                idsAdded.insert(id)
-            }
-
-            self.log("added new ids=\(idsAdded.count)")
-
-            // 8) Обновить реестр
-            if !idsAdded.isEmpty {
-                self.registry.add(idsAdded)
+            // 7) Добавить недостающие
+            if !toAdd.isEmpty {
+                for (schedule, date, id) in desired where toAdd.contains(id) {
+                    let req = NotificationFactory.makeRequest(schedule: schedule, fireDate: date, id: id)
+                    self.center.add(req)
+                }
+                self.registry.add(toAdd)
+                self.log("added new ids=\(toAdd.count)")
             }
         }
     }
@@ -189,7 +171,7 @@ final class NotificationPlanner: NotificationPlanning {
             // Снять все старые ID этого расписания, которых не будет в новом наборе
             let prefix = "flarmo.\(schedule.id.uuidString)."
 
-            // Новый набор ID
+            // Новый набор ID (без глобального капа здесь)
             let dates = self.calculator.nextOccurrences(for: schedule, from: now, until: windowEnd, limit: nil)
             let newIDs: Set<String> = Set(dates.map { self.makeID(scheduleID: schedule.id.uuidString, fireDate: $0) })
 
@@ -225,12 +207,19 @@ final class NotificationPlanner: NotificationPlanning {
     }
 
     private func makeID(scheduleID: String, fireDate: Date) -> String {
+        let stamp = Self.idFormatter.string(from: fireDate)
+        return "flarmo.\(scheduleID).\(stamp)"
+    }
+}
+
+private extension NotificationPlanner {
+    static let idFormatter: DateFormatter = {
         let df = DateFormatter()
         df.calendar = Calendar(identifier: .gregorian)
         df.locale = Locale(identifier: "en_US_POSIX")
         df.timeZone = TimeZone.current
         df.dateFormat = "yyyyMMdd'T'HHmmZ"
-        let stamp = df.string(from: fireDate)
-        return "flarmo.\(scheduleID).\(stamp)"
-    }
+        return df
+    }()
 }
+
