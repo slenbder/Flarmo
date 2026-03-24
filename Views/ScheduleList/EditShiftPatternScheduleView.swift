@@ -54,15 +54,12 @@ struct EditShiftPatternScheduleView: View {
                 WheelPickerRow(label: "Отдых", value: $vm.offDays, range: 1...14)
             }
 
-            Section("Стартовая дата") {
-                DatePicker("Начало цикла", selection: $vm.startDate, displayedComponents: .date)
+            Section("Дата и время") {
+                DatePicker("Начало цикла", selection: $vm.startDate, displayedComponents: [.date])
                     .datePickerStyle(.compact)
                     .environment(\.locale, Locale(identifier: "ru_RU"))
                     .onChange(of: vm.startDate) { nameFocused = false }
-            }
-
-            Section("Время срабатывания") {
-                DatePicker("Время", selection: $vm.time, displayedComponents: .hourAndMinute)
+                DatePicker("Время", selection: $vm.time, displayedComponents: [.hourAndMinute])
                     .datePickerStyle(.compact)
                     .environment(\.locale, Locale(identifier: "ru_RU"))
                     .onChange(of: vm.time) { nameFocused = false }
