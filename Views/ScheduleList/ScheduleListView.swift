@@ -77,17 +77,25 @@ struct ScheduleListView: View {
                         planner.planAll(schedules: repo.getAll())
                     }
                 case .createShiftPattern:
-                    Text("Сменный график — скоро")
+                    EditShiftPatternScheduleView(repo: repo, source: .create) {
+                        vm.reload()
+                        planner.planAll(schedules: repo.getAll())
+                    }
                 case .createFloatingPattern:
                     Text("Плавающий график — скоро")
                 case .edit(let schedule):
-                    if case .oneTime = schedule.type {
+                    switch schedule.type {
+                    case .oneTime:
                         EditOneTimeScheduleView(repo: repo, source: .edit(schedule)) {
                             vm.reload()
                             planner.planAll(schedules: repo.getAll())
                         }
-                    } else {
-                        // Пока редактируем только .oneTime. Остальные — чтение.
+                    case .shiftPattern:
+                        EditShiftPatternScheduleView(repo: repo, source: .edit(schedule)) {
+                            vm.reload()
+                            planner.planAll(schedules: repo.getAll())
+                        }
+                    default:
                         ReadonlyScheduleView(schedule: schedule)
                     }
                 }
