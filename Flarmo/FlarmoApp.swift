@@ -47,7 +47,7 @@ struct FlarmoApp: App {
                     }
                 }
         }
-        .onChange(of: scenePhase) { phase in
+        .onChange(of: scenePhase) { _, phase in
             if phase == .active {
                 let now = Date()
                 if now.timeIntervalSince(lastPlanAllAt) > 2 {

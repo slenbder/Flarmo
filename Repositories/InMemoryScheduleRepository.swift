@@ -151,7 +151,7 @@ private extension InMemoryScheduleRepository {
             let data = try JSONEncoder().encode(arr)
             let tmpURL = fileURL.appendingPathExtension("tmp")
             try data.write(to: tmpURL, options: .atomic)
-            try? FileManager.default.replaceItemAt(fileURL, withItemAt: tmpURL)
+            _ = try? FileManager.default.replaceItemAt(fileURL, withItemAt: tmpURL)
         } catch {
             print("❌ [Repo:Memory] Failed to persist: \(error)")
         }
