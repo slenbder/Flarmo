@@ -16,7 +16,6 @@ struct EditShiftPatternScheduleView: View {
     let onSaved: () -> Void
     private let sourceKind: Source
     @FocusState private var nameFocused: Bool
-    @State private var isEditingCycle = false
 
     init(repo: ScheduleRepository, source: Source, onSaved: @escaping () -> Void) {
         switch source {
@@ -51,43 +50,8 @@ struct EditShiftPatternScheduleView: View {
             }
 
             Section("График") {
-                HStack {
-                    Text("Рабочие/выходные дни")
-                    Spacer()
-                    Text("\(vm.onDays)/\(vm.offDays)")
-                        .foregroundStyle(.secondary)
-                }
-                .contentShape(Rectangle())
-                .onTapGesture { isEditingCycle.toggle() }
-
-                if isEditingCycle {
-                    HStack(spacing: 0) {
-                        Text("Работа")
-                            .frame(maxWidth: .infinity)
-                        Picker("Работа", selection: $vm.onDays) {
-                            ForEach(1...14, id: \.self) { n in
-                                Text("\(n) д.").tag(n)
-                            }
-                        }
-                        .pickerStyle(.wheel)
-                        .frame(maxWidth: .infinity)
-                        .clipped()
-
-                        Divider()
-
-                        Text("Отдых")
-                            .frame(maxWidth: .infinity)
-                        Picker("Отдых", selection: $vm.offDays) {
-                            ForEach(1...14, id: \.self) { n in
-                                Text("\(n) д.").tag(n)
-                            }
-                        }
-                        .pickerStyle(.wheel)
-                        .frame(maxWidth: .infinity)
-                        .clipped()
-                    }
-                    .frame(height: 120)
-                }
+                WheelPickerRow(label: "Работа", value: $vm.onDays, range: 1...14)
+                WheelPickerRow(label: "Отдых", value: $vm.offDays, range: 1...14)
             }
 
             Section("Стартовая дата") {
