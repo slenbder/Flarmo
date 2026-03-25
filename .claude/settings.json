@@ -1,0 +1,44 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__xcodebuildmcp__*",
+      "Read",
+      "Write",
+      "Edit",
+      "Bash(swift build*)",
+      "Bash(swift test*)",
+      "Bash(xcodebuild*)",
+      "Bash(swiftlint*)",
+      "Bash(cat *)",
+      "Bash(find *)",
+      "Bash(grep *)",
+      "Bash(ls *)",
+      "Bash(head *)",
+      "Bash(tail *)",
+      "Bash(wc *)",
+      "Bash(diff *)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git add*)",
+      "Bash(git commit*)",
+      "Bash(git branch*)",
+      "Bash(git checkout*)",
+      "Bash(git stash*)",
+      "Bash(git show*)",
+      "Bash(mkdir *)",
+      "Bash(touch *)",
+      "Bash(sed *)",
+      "Bash(sort *)",
+      "Bash(open *)"
+    ],
+    "deny": [
+      "Bash(rm -rf *)",
+      "Bash(rm -r DerivedData*)",
+      "Bash(git push*)",
+      "Bash(git rebase*)",
+      "Bash(git reset --hard*)",
+      "Bash(git clean*)"
+    ]
+  }
+}

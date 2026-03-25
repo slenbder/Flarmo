@@ -178,7 +178,6 @@ private struct ScheduleDTO: Codable {
 private enum ScheduleTypeDTO: Codable {
     case oneTime(Date)
     case shiftPattern(startDate: Date, onDays: Int, offDays: Int, hour: Int, minute: Int)
-    case weekdays(days: [Int], hour: Int, minute: Int)
     case customDates([Date])
 
     init(_ t: ScheduleType) {
@@ -186,8 +185,6 @@ private enum ScheduleTypeDTO: Codable {
         case .oneTime(let d): self = .oneTime(d)
         case .shiftPattern(let start, let on, let off, let tod):
             self = .shiftPattern(startDate: start, onDays: on, offDays: off, hour: tod.hour, minute: tod.minute)
-        case .weekdays(let days, let tod):
-            self = .weekdays(days: days.map { $0.rawValue }, hour: tod.hour, minute: tod.minute)
         case .customDates(let arr): self = .customDates(arr)
         }
     }
@@ -197,9 +194,6 @@ private enum ScheduleTypeDTO: Codable {
         case .oneTime(let d): return .oneTime(date: d)
         case .shiftPattern(let start, let on, let off, let hour, let minute):
             return .shiftPattern(startDate: start, onDays: on, offDays: off, time: .init(hour, minute))
-        case .weekdays(let days, let hour, let minute):
-            let set = Set(days.compactMap { Weekday(rawValue: $0) })
-            return .weekdays(days: set, time: .init(hour, minute))
         case .customDates(let arr): return .customDates(arr)
         }
     }

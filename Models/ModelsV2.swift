@@ -37,7 +37,6 @@ public struct Schedule: Identifiable, Codable, Equatable {
 public enum ScheduleType: Codable, Equatable {
     case oneTime(date: Date)
     case shiftPattern(startDate: Date, onDays: Int, offDays: Int, time: TimeOfDay)
-    case weekdays(days: Set<Weekday>, time: TimeOfDay)
     case customDates([Date])
 }
 

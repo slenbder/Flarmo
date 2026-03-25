@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs ls:*)",
+      "Bash(wc -l \"/Users/kira/Documents/Учёба/Проекты/Личные проекты/Flarmo/Repositories/\"*.swift)",
+      "mcp__xcodebuildmcp__session_show_defaults",
+      "mcp__xcodebuildmcp__discover_projs",
+      "mcp__xcodebuildmcp__session_set_defaults",
+      "mcp__xcodebuildmcp__build_sim",
+      "Bash(ssh:*)",
+      "Bash(gem list:*)",
+      "Bash(gh pr:*)"
+    ]
+  }
+}

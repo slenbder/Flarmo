@@ -32,8 +32,6 @@ struct NotificationFactory {
         switch schedule.type {
         case .oneTime:
             return "Разовый будильник — \(when)"
-        case .weekdays:
-            return "Будни — \(when)"
         case .shiftPattern:
             return "Сменный график — \(when)"
         case .customDates:

@@ -18,7 +18,7 @@ extension Schedule {
         case .oneTime(let dateTime):
             date = dateTime > now ? dateTime : nil
 
-        case .weekdays, .shiftPattern, .customDates:
+        case .shiftPattern, .customDates:
             date = RecurrenceCalculator()
                 .nextOccurrences(for: self, from: now, limit: 1, until: nil)
                 .first

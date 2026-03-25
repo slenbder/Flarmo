@@ -58,12 +58,6 @@ struct ScheduleListView: View {
                                 Text("Сменный график")
                             }
                         }
-                        Button(action: { path.append(.createFloatingPattern) }) {
-                            HStack(spacing: 8) {
-                                Image("Wave").renderingMode(.original)
-                                Text("Плавающий график")
-                            }
-                        }
                     } label: {
                         Label("Добавить", systemImage: "plus")
                     }
@@ -82,8 +76,6 @@ struct ScheduleListView: View {
                         vm.reload()
                         planner.planAll(schedules: repo.getAll())
                     }
-                case .createFloatingPattern:
-                    Text("Плавающий график — скоро")
                 case .edit(let schedule):
                     switch schedule.type {
                     case .oneTime:
@@ -107,7 +99,6 @@ struct ScheduleListView: View {
     enum Route: Equatable, Hashable {
         case createOneTime
         case createShiftPattern
-        case createFloatingPattern
         case edit(Schedule)
 
         static func == (lhs: Route, rhs: Route) -> Bool {
@@ -115,8 +106,6 @@ struct ScheduleListView: View {
             case (.createOneTime, .createOneTime):
                 return true
             case (.createShiftPattern, .createShiftPattern):
-                return true
-            case (.createFloatingPattern, .createFloatingPattern):
                 return true
             case let (.edit(a), .edit(b)):
                 return a.id == b.id
@@ -131,10 +120,8 @@ struct ScheduleListView: View {
                 hasher.combine(0)
             case .createShiftPattern:
                 hasher.combine(1)
-            case .createFloatingPattern:
-                hasher.combine(2)
             case .edit(let s):
-                hasher.combine(3)
+                hasher.combine(2)
                 hasher.combine(s.id)
             }
         }

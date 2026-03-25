@@ -45,9 +45,6 @@ public struct RecurrenceCalculator: RecurrenceCalculating {
         case .oneTime(let date):
             return handleOneTime(date: date, from: start, limit: limit, until: until)
 
-        case .weekdays(let days, let time):
-            return handleWeekdays(days: days, time: time, from: start, limit: limit, until: until)
-
         case .shiftPattern(let startDate, let onDays, let offDays, let time):
             return handleShiftPattern(startDate: startDate, onDays: onDays, offDays: offDays, time: time,
                                       from: start, limit: limit, until: until)
@@ -101,30 +98,6 @@ private extension RecurrenceCalculator {
     func handleOneTime(date: Date, from: Date, limit: Int, until: Date?) -> [Date] {
         guard limit > 0, isInRange(date, from: from, until: until) else { return [] }
         return [date]
-    }
-
-    // MARK: Weekdays
-    func handleWeekdays(days: Set<Weekday>, time: TimeOfDay, from: Date, limit: Int, until: Date?) -> [Date] {
-        guard !days.isEmpty else { return [] }
-        var result: [Date] = []
-        var cursorDay = startOfDay(from)
-
-        while result.count < limit {
-            // Ранний выход по until (если день целиком уже за границей)
-            if let until, startOfDay(cursorDay) > until { break }
-
-            let wk = weekdayIndex(cursorDay)
-            // Т.к. Weekday.rawValue совпадает с индексом Calendar, просто сверяем rawValue.
-            if days.contains(where: { $0.rawValue == wk }),
-               let candidate = combine(day: cursorDay, time: time),
-               isInRange(candidate, from: from, until: until) {
-                result.append(candidate)
-            }
-
-            cursorDay = nextDay(from: cursorDay)
-        }
-
-        return result
     }
 
     // MARK: Shift pattern
