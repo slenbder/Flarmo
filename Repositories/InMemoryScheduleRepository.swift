@@ -7,6 +7,7 @@
 
 import Foundation
 import Combine
+import OSLog
 
 final class InMemoryScheduleRepository: ScheduleRepository {
     private var store: [UUID: Schedule] = [:]
@@ -25,7 +26,7 @@ final class InMemoryScheduleRepository: ScheduleRepository {
         self.load()
         seed.forEach { store[$0.id] = $0 }
         self.persist()
-        print("[Repo:Memory] Initialized with \(store.count) items")
+        Logger.repository.info("InMemory initialized with \(self.store.count) items")
     }
 
     func getAll() -> [Schedule] { queue.sync { Array(store.values) } }
@@ -40,13 +41,11 @@ final class InMemoryScheduleRepository: ScheduleRepository {
             wasInserted = !existed
         }
         if wasInserted {
-            print("[Repo:Memory] insert id=\(schedule.id) name=\(schedule.name)")
+            Logger.repository.info("InMemory insert id=\(schedule.id) name=\(schedule.name)")
             subject.send(.inserted([schedule.id]))
-            print("[Repo:Memory] change -> inserted ids={\(schedule.id)}")
         } else {
-            print("[Repo:Memory] update id=\(schedule.id) name=\(schedule.name)")
+            Logger.repository.info("InMemory update id=\(schedule.id) name=\(schedule.name)")
             subject.send(.updated([schedule.id]))
-            print("[Repo:Memory] change -> updated ids={\(schedule.id)}")
         }
     }
 
@@ -61,11 +60,10 @@ final class InMemoryScheduleRepository: ScheduleRepository {
             }
         }
         if didRemove {
-            print("[Repo:Memory] delete id=\(id) name=\(removedName ?? "")")
+            Logger.repository.info("InMemory delete id=\(id) name=\(removedName ?? "")")
             subject.send(.deleted([id]))
-            print("[Repo:Memory] change -> deleted ids={\(id)}")
         } else {
-            print("[Repo:Memory] delete skipped (not found) id=\(id)")
+            Logger.repository.debug("InMemory delete skipped (not found) id=\(id)")
         }
     }
 
@@ -95,11 +93,10 @@ final class InMemoryScheduleRepository: ScheduleRepository {
             }
         }
         if changed {
-            print("[Repo:Memory] updateOneTime id=\(id) name=\(name) \(oldDate.map { "from=\($0)" } ?? "from=?") -> to=\(newDate)")
+            Logger.repository.info("InMemory updateOneTime id=\(id) name=\(name) \(oldDate.map { "from=\($0)" } ?? "from=?") -> to=\(newDate)")
             subject.send(.updated([id]))
-            print("[Repo:Memory] change -> updated ids={\(id)}")
         } else {
-            print("[Repo:Memory] updateOneTime skipped (not found or not oneTime) id=\(id)")
+            Logger.repository.debug("InMemory updateOneTime skipped (not found or not oneTime) id=\(id)")
         }
     }
 
@@ -122,11 +119,10 @@ final class InMemoryScheduleRepository: ScheduleRepository {
             changed = true
         }
         if changed {
-            print("[Repo:Memory] setActive id=\(id) name=\(name) -> \(isActive)")
+            Logger.repository.info("InMemory setActive id=\(id) name=\(name) -> \(isActive)")
             subject.send(.updated([id]))
-            print("[Repo:Memory] change -> updated ids={\(id)}")
         } else {
-            print("[Repo:Memory] setActive skipped (not found) id=\(id)")
+            Logger.repository.debug("InMemory setActive skipped (not found) id=\(id)")
         }
     }
 }
@@ -134,14 +130,14 @@ final class InMemoryScheduleRepository: ScheduleRepository {
 // MARK: - Persistence
 private extension InMemoryScheduleRepository {
     func load() {
-        print("[Repo:Memory] Loading from: \(fileURL.path)")
+        Logger.repository.debug("InMemory loading from: \(self.fileURL.path)")
         guard let data = try? Data(contentsOf: fileURL) else { return }
         do {
             let decoded = try JSONDecoder().decode([ScheduleDTO].self, from: data)
             self.store = Dictionary(uniqueKeysWithValues: decoded.map { ($0.id, $0.model) })
-            print("[Repo:Memory] Loaded \(store.count) items")
+            Logger.repository.info("InMemory loaded \(self.store.count) items")
         } catch {
-            print("❌ [Repo:Memory] Failed to load: \(error)")
+            Logger.repository.error("InMemory failed to load: \(error)")
         }
     }
 
@@ -153,7 +149,7 @@ private extension InMemoryScheduleRepository {
             try data.write(to: tmpURL, options: .atomic)
             _ = try? FileManager.default.replaceItemAt(fileURL, withItemAt: tmpURL)
         } catch {
-            print("❌ [Repo:Memory] Failed to persist: \(error)")
+            Logger.repository.error("InMemory failed to persist: \(error)")
         }
     }
 }

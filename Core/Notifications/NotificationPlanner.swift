@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import OSLog
 import UserNotifications
 
 protocol UserNotificationCentering {
@@ -52,10 +53,8 @@ final class NotificationPlanner: NotificationPlanning {
     private let allSchedulesProvider: (() -> [Schedule])?
 
     // MARK: - Debug helper
-    private let debugEnabled: Bool = true
-    private func log(_ message: @autoclosure () -> String) {
-        guard debugEnabled else { return }
-        print("[Planner] " + message())
+    private func log(_ message: String) {
+        Logger.notifications.debug("\(message, privacy: .public)")
     }
 
     init(

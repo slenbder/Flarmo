@@ -56,6 +56,11 @@
 			path = Extensions;
 			sourceTree = "<group>";
 		};
+		4FDEAC7A2E6A000000A3BE21 /* Infrastructure */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Infrastructure;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -75,6 +80,7 @@
 				4F8DCA492E702DE800829D53 /* Core */,
 				4F8DC98D2E6D938400829D53 /* Domain */,
 				4FDEAC692E685DBD00A3BE21 /* Extensions */,
+				4FDEAC7A2E6A000000A3BE21 /* Infrastructure */,
 				4FDEAC552E68591000A3BE21 /* Models */,
 				4FDEAC562E68592500A3BE21 /* ViewModels */,
 				4FDEAC572E68592E00A3BE21 /* Views */,
@@ -118,6 +124,7 @@
 				4FDEAC582E68593700A3BE21 /* Services */,
 				4FDEAC592E68593E00A3BE21 /* Repositories */,
 				4FDEAC692E685DBD00A3BE21 /* Extensions */,
+				4FDEAC7A2E6A000000A3BE21 /* Infrastructure */,
 			);
 			name = Flarmo;
 			packageProductDependencies = (

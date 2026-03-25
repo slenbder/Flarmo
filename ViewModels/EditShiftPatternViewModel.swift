@@ -4,6 +4,7 @@
 //
 
 import Foundation
+import OSLog
 
 @MainActor
 final class EditShiftPatternViewModel: ObservableObject {
@@ -79,15 +80,15 @@ final class EditShiftPatternViewModel: ObservableObject {
             )
         }
         repo.upsert(schedule)
-        print("✅ Saved shift pattern: \(schedule.name.isEmpty ? "Сменный" : schedule.name) (\(onDays)×\(offDays) с \(startDate))")
-        print("💾 Repo now has \(repo.getAll().count) schedules")
+        Logger.ui.info("Saved shift pattern: \(schedule.name.isEmpty ? "Сменный" : schedule.name) (\(self.onDays)×\(self.offDays) с \(self.startDate))")
+        Logger.ui.debug("Repo now has \(self.repo.getAll().count) schedules")
     }
 
     func deleteIfEditing() {
         if case .edit(let s) = mode {
             repo.delete(id: s.id)
-            print("🗑 Deleted schedule: \(s.name.isEmpty ? s.id.uuidString : s.name)")
-            print("💾 Repo now has \(repo.getAll().count) schedules")
+            Logger.ui.info("Deleted schedule: \(s.name.isEmpty ? s.id.uuidString : s.name)")
+            Logger.ui.debug("Repo now has \(self.repo.getAll().count) schedules")
         }
     }
 }

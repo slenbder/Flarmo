@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import OSLog
 
 final class AppBootstrap {
     private let repo: ScheduleRepository
@@ -23,10 +24,10 @@ final class AppBootstrap {
     }
 
     func start() {
-        print("[AppBootstrap] Starting app bootstrap")
+        Logger.lifecycle.info("Starting app bootstrap")
         migrator.runIfNeeded()
         let all = repo.getAll()
-        print("[AppBootstrap] Loaded \(all.count) schedules from repo")
+        Logger.lifecycle.info("Loaded \(all.count) schedules from repo")
         // Конфигурацию NotificationService выполняем в FlarmoApp.init()
         // NotificationService.shared.configure(repo: repo, planner: ...)
     }

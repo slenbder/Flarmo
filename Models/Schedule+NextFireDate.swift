@@ -6,20 +6,25 @@
 //
 
 import Foundation
+import OSLog
 
 extension Schedule {
     /// Возвращает дату следующего срабатывания или nil, если неактивно/в прошлом.
     func nextFireDate(from now: Date = Date(), calendar: Calendar = .current) -> Date? {
+        Logger.recurrence.debug("nextFireDate called for schedule=\(self.id)")
         guard isActive else { return nil }
+        let date: Date?
         switch type {
         case .oneTime(let dateTime):
-            return dateTime > now ? dateTime : nil
+            date = dateTime > now ? dateTime : nil
 
         case .weekdays, .shiftPattern, .customDates:
-            return RecurrenceCalculator()
+            date = RecurrenceCalculator()
                 .nextOccurrences(for: self, from: now, limit: 1, until: nil)
                 .first
         }
+        Logger.recurrence.info("nextFireDate result: \(date?.description ?? "nil")")
+        return date
     }
 
     /// Короткая подпись «Следующее срабатывание»

@@ -5,6 +5,7 @@
 //  Created by Кирилл Марьясов on 9/3/25.
 //
 
+import OSLog
 import SwiftUI
 import UserNotifications
 
@@ -38,7 +39,7 @@ struct FlarmoApp: App {
             ScheduleListView(repo: appRepo, planner: planner)
                 .onAppear {
                     NotificationService.shared.requestPermission { granted in
-                        print("Разрешение на уведомления: \(granted)")
+                        Logger.lifecycle.info("Разрешение на уведомления: \(granted)")
                         NotificationService.shared.removeLegacyPending {
                             // Первичный прогон планировщика после очистки легаси
                             planner.planAll(schedules: appRepo.getAll())

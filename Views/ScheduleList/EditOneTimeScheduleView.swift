@@ -5,6 +5,7 @@
 //  Created by Кирилл Марьясов on 9/5/25.
 //
 
+import OSLog
 import SwiftUI
 
 struct EditOneTimeScheduleView: View {
@@ -47,7 +48,7 @@ struct EditOneTimeScheduleView: View {
                 TextField("Название", text: $vm.name)
                     .focused($nameFocused)
                     .submitLabel(.done)
-                    .onSubmit { print("[UI] onSubmit name field"); nameFocused = false }
+                    .onSubmit { Logger.ui.debug("onSubmit name field"); nameFocused = false }
                 ColorPickerRow(selectedId: $vm.colorId)
                     .contentShape(Rectangle())
                     .simultaneousGesture(TapGesture().onEnded { if nameFocused { nameFocused = false } })
@@ -59,7 +60,7 @@ struct EditOneTimeScheduleView: View {
                 DatePicker("Дата", selection: $vm.date, displayedComponents: [.date])
                     .datePickerStyle(.compact)
                     .environment(\.locale, Locale(identifier: "ru_RU"))
-                    .onChange(of: vm.date) { print("[UI] date changed to \(vm.date)"); nameFocused = false }
+                    .onChange(of: vm.date) { Logger.ui.debug("date changed to \(self.vm.date)"); nameFocused = false }
                 DatePicker("Время", selection: $vm.date, displayedComponents: [.hourAndMinute])
                     .datePickerStyle(.compact)
                     .environment(\.locale, Locale(identifier: "ru_RU"))
@@ -83,7 +84,7 @@ struct EditOneTimeScheduleView: View {
 
             Section {
                 Button {
-                    print("[UI] Save tapped (canSave=\(vm.canSave))")
+                    Logger.ui.debug("Save tapped (canSave=\(self.vm.canSave))")
                     vm.save()
                     onSaved()
                     dismiss()

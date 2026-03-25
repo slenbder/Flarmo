@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import OSLog
 
 @MainActor
 final class EditOneTimeScheduleViewModel: ObservableObject {
@@ -41,7 +42,7 @@ final class EditOneTimeScheduleViewModel: ObservableObject {
 
     func save() {
         if isActive && date < Date() {
-            print("⚠️ Warning: saving active one-time schedule in the past — will be marked as inactive")
+            Logger.ui.debug("Saving active one-time schedule in the past — will be marked as inactive")
         }
         let schedule: Schedule
         switch mode {
@@ -64,20 +65,18 @@ final class EditOneTimeScheduleViewModel: ObservableObject {
         }
         repo.upsert(schedule)
         if let next = schedule.nextFireDate() {
-            print("✅ Saved & scheduled: \(schedule.name.isEmpty ? "Будильник" : schedule.name) at \(next)")
+            Logger.ui.info("Saved & scheduled: \(schedule.name.isEmpty ? "Будильник" : schedule.name) at \(next)")
         } else {
-            print("⏸ Saved (inactive or past): \(schedule.name.isEmpty ? "Будильник" : schedule.name)")
+            Logger.ui.info("Saved (inactive or past): \(schedule.name.isEmpty ? "Будильник" : schedule.name)")
         }
-        let all = repo.getAll()
-        print("💾 Repo now has \(all.count) schedules")
+        Logger.ui.debug("Repo now has \(self.repo.getAll().count) schedules")
     }
 
     func deleteIfEditing() {
         if case .edit(let s) = mode {
             repo.delete(id: s.id)
-            let all = repo.getAll()
-            print("🗑 Deleted schedule: \(s.name.isEmpty ? s.id.uuidString : s.name)")
-            print("💾 Repo now has \(all.count) schedules")
+            Logger.ui.info("Deleted schedule: \(s.name.isEmpty ? s.id.uuidString : s.name)")
+            Logger.ui.debug("Repo now has \(self.repo.getAll().count) schedules")
         }
     }
 }

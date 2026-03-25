@@ -7,6 +7,7 @@
 
 import Foundation
 import Combine
+import OSLog
 
 @MainActor
 final class ScheduleListViewModel: ObservableObject {
@@ -33,20 +34,20 @@ final class ScheduleListViewModel: ObservableObject {
             return na < nb
         })
         let after = items.count
-        print("[VM] reload() items: before=\(before) after=\(after)")
+        Logger.ui.debug("reload() items: before=\(before) after=\(after)")
         if !items.isEmpty {
             let summary = items.prefix(3).map { s -> String in
                 let nextStr = s.nextFireDate().map { "\($0)" } ?? "nil"
                 return "\(s.name.isEmpty ? s.id.uuidString : s.name)[\(s.id)] next=\(nextStr)"
             }.joined(separator: " | ")
-            print("[VM] top items: \(summary)\(items.count > 3 ? " ..." : "")")
+            Logger.ui.debug("top items: \(summary)\(self.items.count > 3 ? " ..." : "")")
         }
     }
 
     func delete(at offsets: IndexSet) {
         for idx in offsets {
             let s = items[idx]
-            print("[VM] delete request id=\(s.id) name=\(s.name)")
+            Logger.ui.info("delete request id=\(s.id) name=\(s.name)")
             repo.delete(id: s.id)
         }
         // Локально обновим сразу; событие из репозитория тоже придёт
@@ -59,13 +60,13 @@ final class ScheduleListViewModel: ObservableObject {
             .sink { [weak self] change in
                 switch change {
                 case .inserted(let ids):
-                    print("[VM] repo change: inserted ids=\(Array(ids))")
+                    Logger.ui.debug("repo change: inserted ids=\(Array(ids))")
                 case .updated(let ids):
-                    print("[VM] repo change: updated ids=\(Array(ids))")
+                    Logger.ui.debug("repo change: updated ids=\(Array(ids))")
                 case .deleted(let ids):
-                    print("[VM] repo change: deleted ids=\(Array(ids))")
+                    Logger.ui.debug("repo change: deleted ids=\(Array(ids))")
                 case .snapshot:
-                    print("[VM] repo change: snapshot")
+                    Logger.ui.debug("repo change: snapshot")
                 }
                 self?.reload()
             }

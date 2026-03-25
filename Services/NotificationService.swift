@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import OSLog
 import UserNotifications
 
 class NotificationService: NSObject, UNUserNotificationCenterDelegate {
@@ -31,7 +32,7 @@ class NotificationService: NSObject, UNUserNotificationCenterDelegate {
     func requestPermission(completion: @escaping (Bool) -> Void) {
         center.requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
             if let error = error {
-                print("❌ Ошибка запроса разрешения: \(error)")
+                Logger.notifications.error("Ошибка запроса разрешения: \(error)")
             }
             DispatchQueue.main.async {
                 completion(granted)
@@ -70,9 +71,9 @@ class NotificationService: NSObject, UNUserNotificationCenterDelegate {
             let legacy = reqs.map(\.identifier).filter { $0.hasPrefix("sched_") }
             if !legacy.isEmpty {
                 self?.center.removePendingNotificationRequests(withIdentifiers: legacy)
-                print("[NotificationService] Removed legacy pending: \(legacy.count)")
+                Logger.notifications.info("Removed legacy pending: \(legacy.count)")
             } else {
-                print("[NotificationService] No legacy pending found")
+                Logger.notifications.debug("No legacy pending found")
             }
             completion?()
         }
@@ -80,9 +81,9 @@ class NotificationService: NSObject, UNUserNotificationCenterDelegate {
     
     func listScheduledNotifications() {
         center.getPendingNotificationRequests { requests in
-            print("📋 Текущее количество уведомлений: \(requests.count)")
+            Logger.notifications.debug("Текущее количество уведомлений: \(requests.count)")
             for req in requests {
-                print("— \(req.identifier): \(req.content.body)")
+                Logger.notifications.debug("— \(req.identifier): \(req.content.body)")
             }
         }
     }
@@ -98,9 +99,9 @@ class NotificationService: NSObject, UNUserNotificationCenterDelegate {
         
         center.add(request) { error in
             if let error = error {
-                print("❌ Ошибка тестового уведомления: \(error)")
+                Logger.notifications.error("Ошибка тестового уведомления: \(error)")
             } else {
-                print("✅ Тестовое уведомление запланировано (через 10 секунд)")
+                Logger.notifications.info("Тестовое уведомление запланировано (через 10 секунд)")
             }
         }
     }
@@ -154,7 +155,7 @@ class NotificationService: NSObject, UNUserNotificationCenterDelegate {
                 // На всякий случай — глобальный пересчёт
                 planner.planAll(schedules: repo.getAll())
             }
-            print("⏰ Snoozed +1m for schedule=\(existing.name.isEmpty ? existing.id.uuidString : existing.name)")
+            Logger.notifications.info("Snoozed +1m for schedule=\(existing.name.isEmpty ? existing.id.uuidString : existing.name)")
             completionHandler()
             
         case "ALARM_STOP":
@@ -174,7 +175,7 @@ class NotificationService: NSObject, UNUserNotificationCenterDelegate {
             } else {
                 planner.planAll(schedules: repo.getAll())
             }
-            print("🛑 Stopped schedule=\(scheduleId)")
+            Logger.notifications.info("Stopped schedule=\(scheduleId)")
             completionHandler()
             
         default:

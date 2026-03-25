@@ -7,6 +7,7 @@
 
 import Foundation
 import Combine
+import OSLog
 
 final class FileScheduleRepository: ScheduleRepository {
     private let queue = DispatchQueue(label: "FileScheduleRepository.queue", qos: .utility)
@@ -23,7 +24,7 @@ final class FileScheduleRepository: ScheduleRepository {
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         self.url = dir.appendingPathComponent(filename)
         load()
-        print("[Repo:File] Initialized with \(store.count) items at \(url.lastPathComponent)")
+        Logger.repository.info("Initialized with \(self.store.count) items at \(self.url.lastPathComponent)")
     }
 
     func getAll() -> [Schedule] {
@@ -43,13 +44,11 @@ final class FileScheduleRepository: ScheduleRepository {
             wasInserted = !existed
         }
         if wasInserted {
-            print("[Repo:File] insert id=\(schedule.id) name=\(schedule.name)")
+            Logger.repository.info("insert id=\(schedule.id) name=\(schedule.name)")
             subject.send(.inserted([schedule.id]))
-            print("[Repo:File] change -> inserted ids={\(schedule.id)}")
         } else {
-            print("[Repo:File] update id=\(schedule.id) name=\(schedule.name)")
+            Logger.repository.info("update id=\(schedule.id) name=\(schedule.name)")
             subject.send(.updated([schedule.id]))
-            print("[Repo:File] change -> updated ids={\(schedule.id)}")
         }
     }
 
@@ -64,11 +63,10 @@ final class FileScheduleRepository: ScheduleRepository {
             }
         }
         if didRemove {
-            print("[Repo:File] delete id=\(id) name=\(removedName ?? "")")
+            Logger.repository.info("delete id=\(id) name=\(removedName ?? "")")
             subject.send(.deleted([id]))
-            print("[Repo:File] change -> deleted ids={\(id)}")
         } else {
-            print("[Repo:File] delete skipped (not found) id=\(id)")
+            Logger.repository.debug("delete skipped (not found) id=\(id)")
         }
     }
 
@@ -98,11 +96,10 @@ final class FileScheduleRepository: ScheduleRepository {
             }
         }
         if changed {
-            print("[Repo:File] updateOneTime id=\(id) name=\(name) \(oldDate.map { "from=\($0)" } ?? "from=?") -> to=\(newDate)")
+            Logger.repository.info("updateOneTime id=\(id) name=\(name) \(oldDate.map { "from=\($0)" } ?? "from=?") -> to=\(newDate)")
             subject.send(.updated([id]))
-            print("[Repo:File] change -> updated ids={\(id)}")
         } else {
-            print("[Repo:File] updateOneTime skipped (not found or not oneTime) id=\(id)")
+            Logger.repository.debug("updateOneTime skipped (not found or not oneTime) id=\(id)")
         }
     }
 
@@ -125,11 +122,10 @@ final class FileScheduleRepository: ScheduleRepository {
             changed = true
         }
         if changed {
-            print("[Repo:File] setActive id=\(id) name=\(name) -> \(isActive)")
+            Logger.repository.info("setActive id=\(id) name=\(name) -> \(isActive)")
             subject.send(.updated([id]))
-            print("[Repo:File] change -> updated ids={\(id)}")
         } else {
-            print("[Repo:File] setActive skipped (not found) id=\(id)")
+            Logger.repository.debug("setActive skipped (not found) id=\(id)")
         }
     }
 
@@ -139,9 +135,9 @@ final class FileScheduleRepository: ScheduleRepository {
         do {
             let decoded = try JSONDecoder().decode([ScheduleDTO].self, from: data)
             self.store = Dictionary(uniqueKeysWithValues: decoded.map { ($0.id, $0.model) })
-            print("[Repo:File] Loaded \(store.count) items from disk")
+            Logger.repository.info("Loaded \(self.store.count) items from disk")
         } catch {
-            print("❌ [Repo:File] Failed to load schedules: \(error)")
+            Logger.repository.error("Failed to load schedules: \(error)")
         }
     }
 
@@ -151,7 +147,7 @@ final class FileScheduleRepository: ScheduleRepository {
             let data = try JSONEncoder().encode(arr)
             try data.write(to: url, options: .atomic)
         } catch {
-            print("❌ [Repo:File] Failed to persist schedules: \(error)")
+            Logger.repository.error("Failed to persist schedules: \(error)")
         }
     }
 }

@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import OSLog
 
 // V1 модель (для чтения при миграции)
 private struct AlarmV1: Codable {
@@ -36,13 +37,13 @@ final class MigrationV1toV2: MigrationRunning {
     func runIfNeeded() {
         // already done?
         guard defaults.bool(forKey: didFlag) == false else {
-            print("[Migration] Already done, skipping")
+            Logger.lifecycle.debug("Migration already done, skipping")
             return
         }
 
         // read v1 data
         guard let data = defaults.data(forKey: v1Key) else {
-            print("[Migration] No v1 data found, marking as done")
+            Logger.lifecycle.debug("Migration: no v1 data found, marking as done")
             defaults.set(true, forKey: didFlag)
             return
         }
@@ -50,12 +51,12 @@ final class MigrationV1toV2: MigrationRunning {
         // decode v1 alarms
         let decoder = JSONDecoder()
         guard let alarms = try? decoder.decode([AlarmV1].self, from: data) else {
-            print("[Migration] Failed to decode v1 alarms, marking as done")
+            Logger.lifecycle.error("Migration: failed to decode v1 alarms, marking as done")
             defaults.set(true, forKey: didFlag)
             return
         }
 
-        print("[Migration] Migrating \(alarms.count) alarms from v1 → v2")
+        Logger.lifecycle.info("Migration: migrating \(alarms.count) alarms from v1 → v2")
 
         let migrated: [Schedule] = alarms.map { a in
             Schedule(
@@ -70,7 +71,7 @@ final class MigrationV1toV2: MigrationRunning {
         // upsert migrated directly into v2 repo
         for s in migrated { repo.upsert(s) }
         let total = repo.getAll().count
-        print("[Migration] Completed, now \(total) schedules stored in v2")
+        Logger.lifecycle.info("Migration completed, now \(total) schedules stored in v2")
 
         // set done flag
         defaults.set(true, forKey: didFlag)
