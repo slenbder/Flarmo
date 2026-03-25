@@ -11,7 +11,7 @@ iOS-приложение для будильников и уведомлений
 - Архитектура: MVVM + Repository Pattern
 
 ## Структура проекта
-- **Модели:** ModelsV2.swift — Schedule, ScheduleType (oneTime, weekdays, shiftPattern, customDates), TimeOfDay, Weekday
+- **Модели:** ModelsV2.swift — Schedule, ScheduleType (oneTime, shiftPattern, customDates), TimeOfDay
 - **Ядро:** RecurrenceCalculator, NotificationPlanner, NotificationRegistry, NotificationFactory, NotificationService
 - **Репозиторий:** FileScheduleRepository — JSON в ApplicationSupport, thread-safe через DispatchQueue, Combine change stream
 - **UI:** ScheduleListView (список), EditOneTimeScheduleView (разовый будильник), ReadonlyScheduleView (заглушка для остальных типов)
@@ -19,7 +19,7 @@ iOS-приложение для будильников и уведомлений
 
 ## Текущее состояние
 - ✅ Полностью готово: ядро уведомлений, планировщик, персистентность, миграция V1→V2, UI для oneTime
-- 🚧 Логика готова, UI нет: shiftPattern, weekdays
+- 🚧 Логика готова, UI нет: shiftPattern, customDates
 - 🚧 Заглушки: выбор мелодии (toneId), snooze = 60сек (должно быть 5–10 мин)
 - ❌ Тестов нет
 

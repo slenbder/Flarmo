@@ -21,7 +21,6 @@
 
 ### 🚧 В процессе
 - [ ] UI для сменных графиков (shiftPattern) — логика есть, UI нет
-- [ ] UI для недельных расписаний (weekdays) — логика есть, UI нет
 - [ ] UI для произвольных дат (customDates) — логика есть, UI нет
 - [ ] Выбор мелодии — только заглушка toneId
 - [ ] Snooze — захардкожено 60 сек (нужно 5-10 мин)
@@ -56,19 +55,7 @@
 - [ ] Интеграция с FileScheduleRepository
 - [ ] Preview для разных сценариев
 
-#### 1.2. UI для недельного расписания (Weekdays)
-- [ ] Создать `EditWeekdaysScheduleView.swift`
-- [ ] Создать `EditWeekdaysViewModel.swift`
-- [ ] Компоненты UI:
-  - [ ] Мультиселект дней недели (Пн-Вс)
-  - [ ] Селектор времени для выбранных дней
-  - [ ] Опция "Одно время для всех" vs "Разное время"
-  - [ ] Список выбранных дней с индивидуальным временем
-- [ ] Валидация (минимум 1 день выбран)
-- [ ] Интеграция с FileScheduleRepository
-- [ ] Preview для разных комбинаций
-
-#### 1.3. UI для произвольных дат (CustomDates)
+#### 1.2. UI для произвольных дат (CustomDates)
 - [ ] Создать `EditCustomDatesScheduleView.swift`
 - [ ] Создать `EditCustomDatesViewModel.swift`
 - [ ] Компоненты UI:
@@ -80,7 +67,7 @@
 - [ ] Интеграция с FileScheduleRepository
 - [ ] Preview с разными датами
 
-#### 1.4. Выбор мелодии (Tone Picker)
+#### 1.3. Выбор мелодии (Tone Picker)
 - [ ] Исследовать AVFoundation для системных звуков
 - [ ] Создать `TonePickerView.swift`
 - [ ] Компоненты:
@@ -91,7 +78,7 @@
 - [ ] Обновить NotificationFactory для использования выбранной мелодии
 - [ ] Тестирование на реальном устройстве
 
-#### 1.5. Настройка Snooze
+#### 1.4. Настройка Snooze
 - [ ] Добавить `snoozeDuration: Int` в модель Schedule
 - [ ] Обновить `ModelsV2.swift`
 - [ ] Создать `SnoozeDurationPicker` компонент
@@ -99,11 +86,10 @@
 - [ ] Обновить NotificationService для корректной работы snooze
 - [ ] Миграция данных (если нужно)
 
-#### 1.6. Обновление списка расписаний
+#### 1.5. Обновление списка расписаний
 - [ ] Обновить `ScheduleListView` для всех типов
 - [ ] Карточки для каждого типа расписания:
   - [ ] OneTime — дата и время
-  - [ ] Weekdays — список дней
   - [ ] ShiftPattern — цикл и стартовая дата
   - [ ] CustomDates — количество дат
 - [ ] Удалить `ReadonlyScheduleView` заглушку
@@ -162,7 +148,6 @@
 #### 3.1. Unit Tests
 - [ ] `RecurrenceCalculatorTests.swift`
   - [ ] Тесты для oneTime
-  - [ ] Тесты для weekdays
   - [ ] Тесты для shiftPattern
   - [ ] Тесты для customDates
   - [ ] Edge cases (смена часового пояса, переход на летнее время)
@@ -347,7 +332,7 @@
 ## 🚀 Приоритеты для MVP v1.0
 
 ### Must Have (обязательно для релиза)
-1. ✅ UI для всех типов расписаний (oneTime, weekdays, shiftPattern, customDates)
+1. ✅ UI для всех типов расписаний (oneTime, shiftPattern, customDates)
 2. ✅ Выбор мелодии
 3. ✅ Настройка snooze (5-10 мин)
 4. ✅ Базовые unit-тесты (минимум 60% coverage)
