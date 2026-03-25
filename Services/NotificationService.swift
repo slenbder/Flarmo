@@ -120,8 +120,27 @@ class NotificationService: NSObject, UNUserNotificationCenterDelegate {
     func userNotificationCenter(_ center: UNUserNotificationCenter,
                                 willPresent notification: UNNotification,
                                 withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-        Logger.notifications.info("Notification will present: \(notification.request.identifier)")
+        let reqId = notification.request.identifier
+        Logger.notifications.info("Notification will present: \(reqId), repo=\(self.repo == nil ? "nil" : "set")")
         completionHandler([.banner, .sound, .list])
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            Logger.notifications.info("willPresent async: deactivating for \(reqId)")
+            guard let scheduleId = self.extractScheduleId(from: reqId) else {
+                Logger.notifications.error("willPresent async: failed to extract scheduleId")
+                return
+            }
+            guard let schedule = self.repo?.getById(scheduleId) else {
+                Logger.notifications.error("willPresent async: schedule not found, repo=\(self.repo == nil ? "nil" : "set")")
+                return
+            }
+            guard case .oneTime = schedule.type else { return }
+            self.repo?.setActive(false, id: scheduleId)
+            Logger.notifications.info("Auto-deactivated oneTime schedule after trigger: \(scheduleId)")
+            if let allSchedules = self.repo?.getAll() {
+                self.planner?.planAll(schedules: allSchedules)
+            }
+        }
     }
     
     // Срабатывает, когда пользователь нажал кнопку в уведомлении
