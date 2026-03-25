@@ -5,6 +5,7 @@
 //  Created by Кирилл Марьясов on 9/5/25.
 //
 
+import OSLog
 import SwiftUI
 
 struct ScheduleListView: View {
@@ -181,6 +182,7 @@ private struct ScheduleRow: View {
     }
 
     private var nextLabel: String {
+        Logger.ui.debug("ScheduleRow nextLabel for schedule=\(schedule.id)")
         if let d = next {
             if let rel = relativeLabel(for: d) { return rel }
             return Self.ruFormatter.string(from: d)

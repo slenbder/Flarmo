@@ -49,9 +49,11 @@ struct FlarmoApp: App {
                 }
         }
         .onChange(of: scenePhase) { _, phase in
+            Logger.lifecycle.info("Scene phase changed: \(String(describing: phase))")
             if phase == .active {
                 let now = Date()
                 if now.timeIntervalSince(lastPlanAllAt) > 2 {
+                    Logger.lifecycle.info("Scene became active — triggering planAll")
                     planner.planAll(schedules: appRepo.getAll())
                     lastPlanAllAt = now
                 }

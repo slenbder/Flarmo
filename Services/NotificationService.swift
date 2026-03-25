@@ -120,6 +120,7 @@ class NotificationService: NSObject, UNUserNotificationCenterDelegate {
     func userNotificationCenter(_ center: UNUserNotificationCenter,
                                 willPresent notification: UNNotification,
                                 withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        Logger.notifications.info("Notification will present: \(notification.request.identifier)")
         completionHandler([.banner, .sound, .list])
     }
     
@@ -128,8 +129,9 @@ class NotificationService: NSObject, UNUserNotificationCenterDelegate {
                                 didReceive response: UNNotificationResponse,
                                 withCompletionHandler completionHandler: @escaping () -> Void) {
         
+        Logger.notifications.info("Notification action received: actionId=\(response.actionIdentifier) reqId=\(response.notification.request.identifier)")
         let req = response.notification.request
-        
+
         switch response.actionIdentifier {
         case "ALARM_SNOOZE":
             // Snooze = +60 секунд (для тестов)
