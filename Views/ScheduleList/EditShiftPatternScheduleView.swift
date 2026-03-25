@@ -1,20 +1,18 @@
 //
-//  EditOneTimeScheduleView.swift
+//  EditShiftPatternScheduleView.swift
 //  Flarmo
-//
-//  Created by Кирилл Марьясов on 9/5/25.
 //
 
 import SwiftUI
 
-struct EditOneTimeScheduleView: View {
+struct EditShiftPatternScheduleView: View {
     enum Source {
         case create
         case edit(Schedule)
     }
 
     @Environment(\.dismiss) private var dismiss
-    @StateObject private var vm: EditOneTimeScheduleViewModel
+    @StateObject private var vm: EditShiftPatternViewModel
     let onSaved: () -> Void
     private let sourceKind: Source
     @FocusState private var nameFocused: Bool
@@ -22,16 +20,12 @@ struct EditOneTimeScheduleView: View {
     init(repo: ScheduleRepository, source: Source, onSaved: @escaping () -> Void) {
         switch source {
         case .create:
-            _vm = StateObject(wrappedValue: EditOneTimeScheduleViewModel(repo: repo, mode: .create))
+            _vm = StateObject(wrappedValue: EditShiftPatternViewModel(repo: repo, mode: .create))
         case .edit(let schedule):
-            _vm = StateObject(wrappedValue: EditOneTimeScheduleViewModel(repo: repo, mode: .edit(schedule)))
+            _vm = StateObject(wrappedValue: EditShiftPatternViewModel(repo: repo, mode: .edit(schedule)))
         }
         self.onSaved = onSaved
         self.sourceKind = source
-    }
-
-    private var isPast: Bool {
-        vm.date < Date()
     }
 
     var body: some View {
@@ -47,7 +41,7 @@ struct EditOneTimeScheduleView: View {
                 TextField("Название", text: $vm.name)
                     .focused($nameFocused)
                     .submitLabel(.done)
-                    .onSubmit { print("[UI] onSubmit name field"); nameFocused = false }
+                    .onSubmit { nameFocused = false }
                 ColorPickerRow(selectedId: $vm.colorId)
                     .contentShape(Rectangle())
                     .simultaneousGesture(TapGesture().onEnded { if nameFocused { nameFocused = false } })
@@ -55,35 +49,31 @@ struct EditOneTimeScheduleView: View {
                     .simultaneousGesture(TapGesture().onEnded { if nameFocused { nameFocused = false } })
             }
 
+            Section("График") {
+                WheelPickerRow(label: "Работа", value: $vm.onDays, range: 1...14)
+                WheelPickerRow(label: "Отдых", value: $vm.offDays, range: 1...14)
+            }
+
             Section("Дата и время") {
-                DatePicker("Дата", selection: $vm.date, displayedComponents: [.date])
+                DatePicker("Начало цикла", selection: $vm.startDate, displayedComponents: [.date])
                     .datePickerStyle(.compact)
                     .environment(\.locale, Locale(identifier: "ru_RU"))
-                    .onChange(of: vm.date) { print("[UI] date changed to \(vm.date)"); nameFocused = false }
-                DatePicker("Время", selection: $vm.date, displayedComponents: [.hourAndMinute])
+                    .onChange(of: vm.startDate) { nameFocused = false }
+                DatePicker("Время", selection: $vm.time, displayedComponents: [.hourAndMinute])
                     .datePickerStyle(.compact)
                     .environment(\.locale, Locale(identifier: "ru_RU"))
+                    .onChange(of: vm.time) { nameFocused = false }
             }
-            
-            if isPast {
-                Section {
-                    Label("Дата/время в прошлом. Выберите будущее время.", systemImage: "exclamationmark.triangle.fill")
-                        .foregroundStyle(.red)
-                }
-            }
-            
+
             Section {
                 EmptyView()
             }
             .listRowBackground(Color.clear)
             .contentShape(Rectangle())
-            .onTapGesture {
-                if nameFocused { nameFocused = false }
-            }
+            .onTapGesture { if nameFocused { nameFocused = false } }
 
             Section {
                 Button {
-                    print("[UI] Save tapped (canSave=\(vm.canSave))")
                     vm.save()
                     onSaved()
                     dismiss()
@@ -91,7 +81,7 @@ struct EditOneTimeScheduleView: View {
                     Text("Сохранить")
                         .frame(maxWidth: .infinity, alignment: .center)
                 }
-                .disabled(!vm.canSave || isPast)
+                .disabled(!vm.canSave)
             }
 
             if case .edit = sourceKind {
@@ -110,13 +100,6 @@ struct EditOneTimeScheduleView: View {
         .navigationTitle(title)
         .navigationBarTitleDisplayMode(.inline)
         .scrollDismissesKeyboard(.interactively)
-        .onAppear {
-            // Нормализуем секунды до 0, чтобы исключить рассинхрон с триггерами
-            let comps = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: vm.date)
-            if let normalized = Calendar.current.date(from: comps) {
-                vm.date = normalized
-            }
-        }
         .toolbar {
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()
@@ -127,6 +110,6 @@ struct EditOneTimeScheduleView: View {
 
     private var title: String {
         if case .edit = sourceKind { return "Править" }
-        return "Разовый"
+        return "Сменный график"
     }
 }

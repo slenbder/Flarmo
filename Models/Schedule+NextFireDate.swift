@@ -15,11 +15,10 @@ extension Schedule {
         case .oneTime(let dateTime):
             return dateTime > now ? dateTime : nil
 
-        case .weekdays(_, _),
-             .shiftPattern(_, _, _, _),
-             .customDates(_):
-            // Будет реализовано позже (этапы D/E).
-            return nil
+        case .weekdays, .shiftPattern, .customDates:
+            return RecurrenceCalculator()
+                .nextOccurrences(for: self, from: now, limit: 1, until: nil)
+                .first
         }
     }
 
